@@ -1,15 +1,17 @@
-# Как сообщить об ошибке или предложить изменение
+# Contributing
 
-Используйте GitHub Issues этого репозитория. Для ошибки выберите форму **Ошибка / Bug report**, для предложения **Предложение / Feature request**. Можно писать по-русски или по-английски.
+Use [GitHub Issues](https://github.com/tyvor/fireup-optimize/issues) for bugs and suggestions. Choose **Bug report** or **Feature request**. English and Russian reports are welcome.
 
-В отчёте об ошибке укажите версии FireUp, Firefox и ОС, точные шаги, ожидаемый и фактический результат. Для проблем с выгрузкой полезны число вкладок, размер рабочего набора, таймер и состояние защиты. Указывайте домен только если можете раскрыть его публично.
+For a bug, include FireUp, Firefox and OS versions, exact steps, expected and actual behavior. For unloading problems, include the tab count, working-set size, timer and protection state. Mention a domain only if you can disclose it publicly.
 
-Сообщения и вложения в Issues публичные. Не загружайте профиль Firefox, историю, cookies, токены и данные аккаунтов. Если прикладываете экспорт настроек, сначала замените частные домены. Скриншоты тоже могут содержать личные названия и адреса вкладок.
+Issues and attachments are public. Do not upload Firefox profiles, cookies, tokens, browsing history or account data. Remove private domains from settings exports and redact tab titles and URLs in screenshots.
 
-## Изменения кода
+## Code changes
 
-Для крупного изменения сначала опишите задачу в Issue. Небольшое исправление можно предложить через pull request. В описании укажите, что изменилось, и как это проверено. Сохраняйте локальную обработку данных, минимальные разрешения и явную защиту важных вкладок.
+For a large change, describe the problem in an issue first. Small fixes can be submitted as pull requests. Explain the behavior change and how you verified it. Preserve local data processing, minimal permissions and explicit protection for important tabs.
 
-Проверки логики запускаются через `npm test`; сборка описана в [BUILD-INSTRUCTIONS.md](BUILD-INSTRUCTIONS.md). Тесты интерфейса используют Chromium с имитацией API, поэтому изменения, затрагивающие Firefox API, проверяйте и в настоящем Firefox. Не включайте в коммит личные экспорты, профили браузера и неподписанные сборки из `dist/`.
+Run `npm test` for policy, engine and localization checks. `npm run test:ui` runs UI checks with Chromium and mocked APIs after installing Playwright. Changes involving browser APIs also need testing in real Firefox. See [BUILD-INSTRUCTIONS.md](BUILD-INSTRUCTIONS.md).
 
-Вклады в проект распространяются под той же [MIT](LICENSE), что и остальной исходный код.
+Do not commit personal exports, browser profiles, logs or generated packages from `dist/`. New interface text needs English and Russian translations. Keep English as the fallback and test both browser-default and manual language selection.
+
+Contributions use the project's [MIT license](LICENSE).
