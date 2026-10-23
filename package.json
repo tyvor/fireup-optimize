@@ -1,11 +1,13 @@
 {
   "name": "fireup",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "license": "MIT",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
-    "test": "node --test tests/engine.test.cjs tests/features.test.cjs",
-    "test:ui": "node tests/ui.test.cjs"
+    "test": "node --test tests/engine.test.cjs tests/features.test.cjs tests/i18n.test.cjs",
+    "test:ui": "node tests/ui.test.cjs && node tests/i18n-ui.test.cjs"
   }
 }
