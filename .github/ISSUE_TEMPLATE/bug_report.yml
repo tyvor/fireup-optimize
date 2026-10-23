@@ -1,0 +1,52 @@
+name: Ошибка / Bug report
+description: Что-то работает неправильно / Something is not working
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Issues и вложения публичные. Не отправляйте профиль Firefox, cookies, токены, историю или частные адреса. Скройте личные данные на скриншотах. Можно писать по-русски или по-английски.
+        Issues are public. Remove personal data before posting.
+  - type: input
+    id: fireup-version
+    attributes:
+      label: Версия FireUp / FireUp version
+      placeholder: 0.3.0
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Firefox и ОС / Firefox and OS
+      placeholder: Версия Firefox, обычный или ESR; версия ОС
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Шаги воспроизведения / Steps to reproduce
+      description: Какие действия вызывают проблему? Адрес сайта указывайте только если его можно раскрыть.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Ожидаемый результат / Expected result
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Что произошло / Actual result
+    validations:
+      required: true
+  - type: textarea
+    id: settings
+    attributes:
+      label: Настройки и состояние вкладок / Settings and tab state
+      description: Рабочий набор, таймер, число вкладок, закрепление, звук, защита. Полный экспорт не обязателен.
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Дополнительные сведения / Additional details
+      description: Обезличенный скриншот или текст ошибки. Для памяти укажите, где и когда измеряли и что изменилось после выгрузки.

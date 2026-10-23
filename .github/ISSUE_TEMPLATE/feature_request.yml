@@ -1,0 +1,23 @@
+name: Предложение / Feature request
+description: Предложить изменение / Suggest a change
+title: "[Feature] "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Какую задачу нужно решить? / What problem should this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Предлагаемое поведение / Proposed behavior
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Как решаете задачу сейчас? / Current workaround
+  - type: markdown
+    attributes:
+      value: Не публикуйте частные адреса, данные аккаунтов и содержимое личных вкладок. / Do not post private URLs or account data.
