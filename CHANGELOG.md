@@ -1,18 +1,25 @@
 # Changelog
 
+## 0.4.0
+
+- English and Russian interfaces with browser-default language selection and a saved manual override.
+- Localized popup, settings, validation messages, tab context menus and shortcut description.
+- Settings export format 2 includes language. Format 1 exports from 0.3.0 remain importable and select Browser default.
+- English public documentation, support forms and Mozilla listing materials.
+
 ## 0.3.0
 
-- Защита от повторного автосна после быстрого возврата к вкладке, выгруженной FireUp.
-- Локальный экспорт настроек и импорт с проверкой формата, предпросмотром и явным применением.
+- Longer automatic sleep delays after a quick return to a tab unloaded by FireUp.
+- Local settings export and validated import with preview and explicit application.
 
 ## 0.2.0
 
-- Повторная проверка активности и навигации перед выгрузкой, управляемая очередь и отмена.
-- Защита вкладок на 30 минут, час или до снятия; области ручной выгрузки.
-- Компактная панель с поиском, фильтрами и светлой, тёмной и системной темами.
+- Activity and navigation checks before unloading, a resumable queue and cancellation.
+- Temporary and permanent per-tab protection and manual unloading scopes.
+- Compact popup with search, filters and light, dark and system themes.
 
 ## 0.1.0
 
-- Автосон вкладок с рабочим набором, таймером, исключениями сайтов и ручной защитой.
+- Automatic tab unloading with a recent working set, idle timer, site exclusions and manual protection.
 
-Публичного релиза в каталоге Mozilla пока нет. Эти номера относятся к версиям проекта, использованным до публикации.
+These versions describe the project before its first public Mozilla release.
