@@ -1,5 +1,3 @@
-# FireUp 0.3.0
+# FireUp 0.3.0 history
 
-В этой версии появились защита от повторного автоматического сна и перенос настроек через локальный JSON с предпросмотром.
-
-Текущий статус выпуска и установка описаны в [README.md](../README.md). Перечень изменений находится в [CHANGELOG.md](../CHANGELOG.md), поведение с данными в [PRIVACY.md](../PRIVACY.md).
+Version 0.3.0 introduced quick-return sleep delays and local JSON settings transfer with preview. See the [changelog](../CHANGELOG.md) for the current version and the [README](../README.md) for installation.

@@ -1,23 +1,27 @@
 # Notes for Mozilla reviewers
 
-FireUp 0.3.0 is a desktop Firefox tab-unloading extension. No account, external service or payment is required. The UI is currently in Russian. The minimum Firefox version is 140.
+FireUp 0.4.0 is a desktop Firefox tab-unloading extension. No account, external service or payment is required. The UI supports English and Russian. The minimum Firefox version is 140.
 
-The submitted XPI contains plain source with no build step, remote code or runtime dependencies. See BUILD-INSTRUCTIONS.md for packaging instructions. The extension uses tabs, storage, alarms, menus and sessions. It does not inject content scripts or read page contents. Tab metadata and queued candidate URLs are processed locally. No telemetry or tab information is transmitted to the developer; the manifest declares required data-collection permissions as ["none"]. Details are in PRIVACY.md and docs/PERMISSIONS.md.
+The XPI contains plain source with no compilation, bundling, obfuscation or runtime dependencies. See BUILD-INSTRUCTIONS.md for packaging. Permissions are tabs, storage, alarms, menus and sessions. FireUp does not inject content scripts or read page contents. Tab metadata and queued candidate URLs are processed locally. No telemetry or tab information is transmitted to the developer; required data-collection permissions are ["none"]. See PRIVACY.md and docs/PERMISSIONS.md.
 
 ## Functional checks
 
-Use expendable test tabs and a separate test profile. Open the toolbar popup. "Настройки" opens settings. Set the recent working set to 1 and the idle timer to 1 minute, then save. Exact Russian labels can also be found in options.html. The first-install grace deadline is based on the setting at installation (10 minutes by default), so changing the idle setting does not shorten that original deadline. Manual unloading is available during this grace period.
+Use expendable tabs in a test profile. Open the toolbar popup, then Settings. Set the recent working set to 1 and the idle timer to 1 minute and save. The first-install grace period is based on preferences at installation (10 minutes by default); changing the timer does not shorten that original deadline. Manual unloading is available during the grace period.
 
-The primary "Усыпить вкладки" action defaults to the current window; its scope selector also supports all windows, selected tabs and a site. Manual unload ignores the recent working set and automatic deadlines, while active/pinned/audible/capture/protected/excluded tabs remain skipped. "Остановить" cancels a running queue between candidate operations.
+The primary Unload tabs action defaults to the current window. The scope selector also supports all windows, selected tabs and a site. Manual unloading ignores recent working-set protection and automatic deadlines but still skips active, pinned, audible, capture-active, protected and excluded tabs. Stop cancels between candidate operations.
 
-Use "Защитить" beside a row or the tab context menu to protect a tab permanently or for 30/60 minutes. Site exclusions include subdomains. Private tabs are excluded. Camera, microphone and screen-sharing protection relies on Firefox's reported state. Unsaved forms/editors and silent playback cannot be detected; the listing, popup and settings warn users to protect those tabs manually.
+Use Protect beside a tab or its context menu for 30-minute, one-hour or permanent protection. Domain exclusions include subdomains. Private tabs are excluded. Camera, microphone and screen-sharing protection depends on Firefox's reported state. Unsaved forms, editors and silent playback cannot all be detected; the listing and UI tell users to protect these manually.
 
-Revisiting a tab within two minutes after a confirmed FireUp discard postpones its next automatic sleep. With a 10-minute idle setting, successive quick returns produce 20, 40, 80 and 120-minute delays. The switch "Увеличивать отсрочку после быстрого возврата" disables this feature.
+Returning within two minutes of a confirmed FireUp unload delays the next automatic sleep. With a 10-minute timer, successive quick returns produce 20, 40, 80 and 120-minute delays. This feature can be disabled in settings.
 
-The settings transfer section exports applied preferences and excluded domains as local JSON. Selecting an import file only previews it. "Применить импорт" revalidates and replaces preferences; "Отмена" leaves them unchanged. No tab URLs or per-tab protections are exported.
+## Language and settings transfer
 
-The background page is nonpersistent. Alarms continue the queue; storage.session retains its state only for the current browser run. Per-tab protections use Firefox's sessions API. The paused automatic sweep is removed rather than continuing to scan tabs.
+Settings → Language offers Browser default, English and Russian. Browser default uses i18n.getUILanguage(), selecting Russian for ru locales and English otherwise. English is the fallback. A saved manual choice updates the panel, settings, context menu and command description. Native manifest messages use packaged _locales/en and _locales/ru catalogs. All translations are local; no translation service is used.
+
+Export produces local JSON with applied preferences, language and excluded domains. New files use format 2. Format 1 from 0.3.0 is accepted and normalized to language auto; it cannot inject a language field into the old schema. Import selection is read-only preview. Apply import revalidates and replaces settings; Cancel leaves preferences unchanged. No open-tab URLs or per-tab protections are exported.
+
+The background page is nonpersistent. Alarms resume the queue; storage.session retains it only for the current browser run. Per-tab protection uses Firefox's sessions API. Pausing automatic sleep removes its periodic alarm rather than scanning tabs while paused.
 
 ## Validation evidence
 
-44 Node policy/engine checks and 14 Chromium UI scenarios with mocked Firefox APIs passed. The project author separately reported successful use in real Firefox and memory being released. The exact native Firefox version and complete native test matrix were not supplied; we do not claim that the mocked tests verify native API compatibility or measured memory savings.
+50 Node policy, engine and localization checks and 20 Chromium UI scenarios with mocked Firefox APIs passed. The author reported successful use and memory release for the preceding 0.3.0 behavior in real Firefox. Native Firefox version details and a full scenario log were not supplied; the 0.4.0 localization changes have not been independently verified in native Firefox here. Mocked tests do not establish native compatibility or measured memory savings.

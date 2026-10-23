@@ -1,27 +1,28 @@
-# Проверки 0.3.0
+# Testing 0.4.0
 
-## Выполнено
+## Recorded checks
 
-24 октября 2026 года пройдены 44 автоматические проверки политики и обработчика на Node.js с имитацией Firefox API. Они покрывают защиту вкладок, гонки при навигации и переключении вкладок, очередь и отмену, сохранение состояния фоновой страницы, быстрые возвраты, импорт/экспорт и проверку данных.
+The 50 Node policy, engine and localization checks cover tab protection, navigation and activation races, queue cancellation and persistence, quick returns, settings transfer, language detection, saved overrides, old-format migration and translated native menu descriptions.
 
-14 сценариев интерфейса проверены в Chromium через Playwright с тем же обработчиком и имитацией API. В их числе темы, поиск, области выгрузки, защита, клавиатура, ошибки загрузки, скачивание экспорта и применение импорта. Это проверка интерфейса, не автоматизация настоящего Firefox.
+The 14 general UI scenarios and 6 localization scenarios use Chromium, Playwright and mocked Firefox APIs. They cover search, scopes, protection, queue handling, keyboard focus, themes, settings transfer, both languages, browser-language fallback, persisted choices, translated errors and legacy import. These are interface checks, not native Firefox automation.
 
-24 октября автор проекта сообщил, что проверил расширение в настоящем Firefox и оно работает. Ранее он подтвердил освобождение памяти после выгрузки. Версия Firefox, ОС и полный список проверенных сценариев в этом сообщении не указаны, поэтому расширение не заявляет прохождение полной матрицы совместимости или конкретный объём экономии.
+The project author reported successful use in real Firefox and memory release for the preceding 0.3.0 behavior. Exact Firefox and OS versions and a complete scenario log were not supplied. The 0.4.0 localization changes have not been independently verified in native Firefox in this environment. No full compatibility matrix or measured memory reduction is claimed.
 
-## Полезные сценарии перед релизом и при изменениях API
+## Native checks for release and browser API changes
 
-В отдельном тестовом профиле с тестовыми страницами проверьте:
+Use expendable pages in a separate test profile:
 
-- Автосон после таймера вне рабочего набора; ручную выгрузку окна, сайта и выбранных вкладок; отмену очереди.
-- Активные вкладки нескольких окон, закрепление, звук, камеру, микрофон и демонстрацию. Состояние звонка должно быть известно Firefox.
-- Возврат к выгруженной вкладке, восстановление после перезапуска и ручные защиты при восстановлении сессии.
-- Приватное окно: FireUp не должен обрабатывать его вкладки.
-- Редактор с тестовым несохранённым текстом: ручная защита должна предотвратить выгрузку. Без защиты сохранность ввода не обещается.
-- Импорт с предпросмотром и отменой, экспорт, паузу, темы и клавиатуру.
-- Большой набор тестовых вкладок: очередь остаётся управляемой, переключение на кандидата до выгрузки исключает его из очереди.
+- Check automatic unloading outside the working set, manual scopes and queue cancellation.
+- Check active tabs in multiple windows, pinning, audio and browser-reported camera, microphone and screen sharing.
+- Revisit unloaded tabs, restart Firefox and restore the session; verify per-tab protections.
+- Confirm that private tabs are not processed.
+- Protect an editor containing disposable unsaved text before unloading. Preservation without protection is not promised.
+- Check export, import preview and cancellation, pause, themes and keyboard navigation.
+- Switch Language between Browser default, English and Russian. Save and reopen the panel, then check the tab context menu and shortcut description.
+- Check a large set of test tabs and switching to a candidate before its turn in the queue.
 
-Запишите версии Firefox, FireUp и ОС, действия и результат. Если такой сценарий ещё не проверен, оставьте его непроверенным, а не переносите результат из имитации API.
+Record Firefox, FireUp and OS versions, actions and results. Do not substitute mocked API results for native checks.
 
 ## GitHub Actions
 
-Workflow `.github/workflows/check.yml` запускает тесты логики и упаковку на Windows. Он не публикует дополнение, не подписывает XPI и не выполняет нативный тест Firefox или UI-тест. Первый запуск на GitHub возможен после загрузки репозитория; локальные результаты не означают, что workflow уже прошёл на сервере.
+The workflow runs the Node checks and packages an unsigned XPI on Windows. It does not sign, publish, run UI checks or automate native Firefox. The first 0.3.0 workflow passed; the updated version's result is visible in the repository's Actions tab.
