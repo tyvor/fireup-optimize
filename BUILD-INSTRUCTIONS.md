@@ -24,7 +24,7 @@ Node.js 22 or newer:
 npm test
 ```
 
-These engine and policy tests use Node's built-in runner and mocked Firefox APIs. They require no installed npm dependencies.
+These engine, policy and localization tests use Node's built-in runner and mocked Firefox APIs. They require no installed npm dependencies.
 
 Optional UI tests use Playwright 1.62.1 with Chromium:
 
@@ -35,6 +35,10 @@ npm run test:ui
 ```
 
 `FIREUP_BROWSER` can point to a Chromium executable. The script writes test output to `work/`, root `preview-*.png` and `ui-checks.json`; these are ignored by Git. This test does not run native Firefox APIs. See [docs/TESTING.md](docs/TESTING.md) for coverage and native checks.
+
+## Language
+
+English and Russian interface strings are packaged in i18n.js. Native manifest messages live in _locales/en and _locales/ru. Browser-default language uses browser.i18n.getUILanguage(); a saved local preference can override it. Settings transfer format 2 includes that preference; format 1 from 0.3.0 migrates to auto.
 
 ## Reviewer architecture notes
 
