@@ -1,61 +1,66 @@
 # FireUp
 
-FireUp выгружает неиспользуемые вкладки Firefox, чтобы уменьшить их потребление памяти. Вкладки остаются на месте и загружаются снова при обращении.
+FireUp unloads idle Firefox tabs to reduce their memory use. Tabs stay in your browser and reload when you return to them.
 
-По умолчанию расширение оставляет загруженными 10 последних используемых вкладок. Остальные могут уснуть после 10 минут простоя. Оба значения меняются в настройках. Интерфейс на русском языке. Требуется Firefox 140 или новее на компьютере; Android пока не заявлен.
+By default, FireUp keeps your 10 most recently used tabs loaded and lets other tabs sleep after 10 minutes of inactivity. Both settings are adjustable. Requires desktop Firefox 140 or later. Android support has not been verified.
 
-![Панель FireUp в светлой теме](docs/images/popup-light.png)
+![FireUp tab panel in the light theme](docs/images/popup-light.png)
 
-На скриншотах тестовый набор вкладок. Он показывает интерфейс, а не результат измерения памяти.
+Screenshots use demonstration tabs. They show the interface, not measured memory savings.
 
-## Перед первым использованием
+## Protect important tabs first
 
-Защитите вкладки с несохранённым текстом, редакторами и тихим воспроизведением кнопкой **Защитить**, через меню вкладки или исключение сайта в настройках. FireUp не читает содержимое страниц и не может определить все такие случаи. После выгрузки несохранённые данные могут потеряться.
+Protect tabs containing unsaved text, editors or silent playback before unloading. Use **Protect**, the tab context menu, or a site exclusion in settings. FireUp does not read page contents and cannot detect every unsaved form or playback state. Unloading a page may lose unsaved data.
 
-Текущие вкладки каждого окна, закреплённые и звучащие вкладки, а также вкладки с камерой, микрофоном или демонстрацией, о которых сообщает Firefox, пропускаются. Приватные вкладки не обрабатываются. Страницы вне HTTP/HTTPS тоже пропускаются.
+Active tabs in each window, pinned tabs, audible tabs and browser-reported camera, microphone or screen sharing are skipped. Private tabs and pages outside HTTP/HTTPS are excluded. The first installation includes a grace period to set up protections.
 
-Автосон начинает работать после начальной отсрочки на настройку защиты. Пауза отключает автосон; ручная выгрузка остаётся доступна.
+## Features
 
-## Возможности
+- Automatic unloading with a recent working set and idle timer.
+- Manual unloading for the current window, all windows, selected tabs or a site. Preview the candidate count and stop a running queue.
+- Per-tab protection for 30 minutes, one hour or until removed. Domain exclusions also protect subdomains.
+- Longer automatic sleep delays after a quick return to a tab unloaded by FireUp.
+- Search, filters, light, dark and system themes.
+- Local settings export and import with validation and a preview before replacing settings.
+- English and Russian interfaces, initially selected from the Firefox interface language.
 
-- Автоматическая выгрузка с рабочим набором последних вкладок и таймером простоя.
-- Ручной сон вкладок текущего окна, всех окон, выбранных вкладок или одного сайта. В панели виден предварительный счётчик, очередь можно остановить.
-- Защита вкладки на 30 минут, час или до снятия. Исключение домена защищает и его поддомены.
-- Более поздний автосон после быстрого возврата к вкладке, которую выгрузил FireUp.
-- Поиск, фильтры, светлая, тёмная и системная темы.
-- Экспорт настроек в JSON и импорт с предпросмотром перед заменой текущих значений.
+Manual unloading ignores the working set and automatic delays while respecting tab protections and site exclusions. **Alt+Shift+U** applies to all windows; the popup defaults to the current window. Pausing automatic sleep leaves manual unloading available.
 
-Ручная команда обходит рабочий набор и отсрочки, но соблюдает защиту вкладок и сайтов. **Alt+Shift+U** относится ко всем окнам, а кнопка панели по умолчанию к текущему окну.
+## Language
 
-## Установка
+Open **Settings → Language** and choose **Browser default**, **English** or **Русский**. Browser default uses Firefox's interface language: Russian selects Russian; other unsupported languages fall back to English. A manual choice is saved locally and also applies to the tab context menu and shortcut description. Save settings to persist your choice.
 
-Публичная версия ещё не опубликована в каталоге Mozilla. Неподписанный XPI предназначен для отправки Mozilla, обычный Firefox не установит его как постоянное дополнение.
+Settings exports include the language preference. Version 0.4.0 writes format 2 and also accepts format 1 exports from 0.3.0; importing a legacy file restores Browser default. Version 0.3.0 cannot import format 2.
 
-Для разработки откройте `about:debugging#/runtime/this-firefox`, нажмите **Загрузить временное дополнение** и выберите `extension/manifest.json`. Такая установка действует до перезапуска Firefox. Подробности сборки находятся в [BUILD-INSTRUCTIONS.md](BUILD-INSTRUCTIONS.md), план выпуска в [docs/PUBLISHING.md](docs/PUBLISHING.md).
+## Installation
 
-## Данные и разрешения
+A public Mozilla listing is not available yet. Unsigned XPI files are intended for Mozilla submission or development; regular Firefox requires Mozilla signing for permanent installation.
 
-FireUp обрабатывает сведения о вкладках локально: адрес, название, состояние и время активности нужны для списка, исключений и правил выгрузки. Расширение не отправляет эти данные разработчику, не содержит аналитики, рекламы или серверной части. Содержимое страниц и текст форм оно не читает.
+For development, open `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on**, then select `extension/manifest.json`. Temporary installations last until Firefox restarts. See [BUILD-INSTRUCTIONS.md](BUILD-INSTRUCTIONS.md) for packaging and [docs/PUBLISHING.md](docs/PUBLISHING.md) for release preparation.
 
-Настройки и домены-исключения хранятся в профиле Firefox. Временные отметки активности и очередь, которая содержит адреса для повторной проверки перед выгрузкой, живут до полного завершения браузера. Защита конкретных вкладок хранится через API сессий Firefox и может восстанавливаться вместе с вкладкой.
+## Data and permissions
 
-В экспорт попадают настройки и домены-исключения. Адресов открытых вкладок и защиты конкретных вкладок в нём нет. Полное описание: [PRIVACY.md](PRIVACY.md). Назначение каждого разрешения: [docs/PERMISSIONS.md](docs/PERMISSIONS.md).
+FireUp processes tab metadata locally: URLs, titles, state and access times support its list, exclusions and unloading rules. It does not transmit this information to its developer. It has no analytics, advertising or server component and does not read page contents or form text.
 
-## Ошибки и предложения
+Preferences and excluded domains stay in the Firefox profile. Temporary activity records and pending candidate URLs stay in session storage until the browser fully exits. Per-tab protections use Firefox's sessions API and may be restored with a tab. Exported settings include excluded domains, not open-tab URLs or per-tab protections.
 
-Сообщайте об ошибках через [GitHub Issues](https://github.com/tyvor/fireup-optimize/issues). Форма попросит версии Firefox и FireUp, шаги воспроизведения, ожидаемое и фактическое поведение. Для предложений есть отдельная форма.
+Read [PRIVACY.md](PRIVACY.md) and the [permission explanations](docs/PERMISSIONS.md).
 
-Не прикладывайте полный профиль Firefox, историю, cookies, токены и приватные адреса. Перед загрузкой скриншота скройте личные данные. Экспорт настроек тоже может содержать частные домены. Ошибки в Issues публичные; подробности в [CONTRIBUTING.md](CONTRIBUTING.md).
+## Bugs and suggestions
 
-## Разработка и проверки
+Use [GitHub Issues](https://github.com/tyvor/fireup-optimize/issues). Bug reports ask for Firefox, FireUp and OS versions, reproduction steps, expected and actual behavior. A separate form is available for feature requests. Reports may be written in English or Russian.
 
-Рабочие файлы лежат в `extension/`. Сборки JavaScript нет; расширение не зависит от npm-пакетов. Для тестов логики нужен Node.js 22 или новее:
+Issues and attachments are public. Do not post Firefox profiles, cookies, tokens, browsing history or private URLs. Redact screenshots and remove private domains from settings exports before sharing. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Development
+
+Runtime sources are in `extension/`. There is no JavaScript build step or runtime npm dependency. Use Node.js 22 or later for the policy, engine and localization tests:
 
 ```sh
 npm test
 ```
 
-Для проверки интерфейса установите Playwright отдельно:
+Optional UI checks use Playwright with Chromium and mocked Firefox APIs:
 
 ```sh
 npm install --no-save --package-lock=false playwright@1.62.1
@@ -63,10 +68,10 @@ npx playwright install chromium
 npm run test:ui
 ```
 
-Эта проверка использует Chromium и имитацию Firefox API. Она не заменяет проверку расширения в настоящем Firefox. Сводка проверок и их границы: [docs/TESTING.md](docs/TESTING.md).
+These checks do not replace testing native Firefox APIs. See [docs/TESTING.md](docs/TESTING.md) for coverage and limitations.
 
-## Ограничения и лицензия
+## Limits and license
 
-FireUp использует `tabs.discard`, не закрывает вкладки и не завершает процессы. Освобождённая память зависит от страниц и работы Firefox; фиксированная экономия в мегабайтах или процентах не обещается. Firefox может отказаться выгрузить вкладку. Примерное время до сна не является точным расписанием.
+FireUp uses `tabs.discard`; it does not close tabs or terminate processes. Memory savings depend on the pages and Firefox. No fixed number of megabytes or percentage reduction is promised. Firefox can decline an unload request, and displayed sleep deadlines are approximate.
 
-Исходный код распространяется по [лицензии MIT](LICENSE).
+Source code is available under the [MIT license](LICENSE).
