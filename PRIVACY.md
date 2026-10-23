@@ -1,33 +1,33 @@
-# Данные FireUp 0.3.0
+# Privacy: FireUp 0.4.0
 
-Обновлено 24 октября 2026 года. Этот документ описывает работу расширения FireUp, а не всех функций Firefox или сайтов, которые вы открываете.
+Updated October 24, 2026. This notice covers FireUp itself, not Firefox as a whole or the websites you visit.
 
-## Локальная обработка
+## Local processing
 
-FireUp получает сведения о вкладках через API Firefox: адрес, название, время последнего обращения, окно и состояния загрузки, звука, закрепления, выгрузки и использования камеры, микрофона или экрана. Они нужны, чтобы показать список, применить исключения и выбрать вкладки для сна. Для значков используются только данные, уже предоставленные браузером в разрешённом локальном формате; расширение не загружает значки с сайтов самостоятельно.
+FireUp processes tab URLs, titles, last access times, window IDs and browser-reported loading, pinned, audible, discarded, camera, microphone and screen-sharing states. This information supports the tab list, exclusions and unloading decisions. Only supported browser-provided local favicon data is displayed; FireUp does not fetch favicons from websites.
 
-FireUp не читает HTML страниц, текст форм, пароли или cookies. У расширения нет content scripts, разрешений на чтение содержимого всех сайтов или доступа к API истории посещений. Приватные вкладки исключаются из обработки.
+The extension does not read page contents, form text, passwords or cookies. It has no content scripts, website-content host permissions or browsing-history API permission. Private tabs are excluded from processing.
 
-## Хранение
+## Storage
 
-- В `storage.local` сохраняются настройки, исключения доменов и время окончания начальной отсрочки. Эти данные находятся в профиле Firefox. FireUp не использует `storage.sync`.
-- В `storage.session` хранятся отметки активности открытых вкладок, кэш защит, результат последней очереди и текущая очередь. Для проверки изменений очередь содержит адреса кандидатов. Защита от повторного сна также хранит одну отметку собственной выгрузки на вкладку, включая адрес. Эти данные очищаются после полного завершения браузера; расширение не создаёт журнал посещённых страниц.
-- Через `sessions.setTabValue` сохраняется защита конкретной вкладки. Firefox может восстановить её вместе с вкладкой в следующей сессии. Снять защиту можно в панели или меню вкладки; временная защита перестаёт действовать после указанного срока.
+- Local extension storage holds preferences, excluded domains and the end of the first-install grace period. Preferences include the language choice. FireUp does not use sync storage.
+- Session storage holds per-open-tab activity, cached protections, the last queue result and the pending queue until the browser fully exits. The queue includes candidate URLs to detect navigation before unloading. Quick-return protection also keeps one marker per tab for its own discard, including the URL. Closed-tab records are removed; some expired records are pruned when the list is next read. FireUp does not build a browsing-history log.
+- Per-tab protection is stored through Firefox's sessions API and may be restored with the tab. Users can remove it in the panel or tab context menu. Timed protection stops applying after its deadline.
 
-Записи закрытых вкладок удаляются из рабочего состояния. Некоторые истёкшие отметки очищаются при следующем чтении списка. Файла с историей вкладок FireUp не создаёт.
+Browser-default language uses Firefox's interface language through the i18n API. No language information is sent to a server.
 
-## Передача данных
+## Transmission
 
-FireUp не отправляет сведения о вкладках, настройки или диагностику разработчику и третьим лицам. В расширении нет аналитики, рекламы, сервера или удалённого кода. Политика расширения запрещает сетевые соединения через `connect-src 'none'`.
+FireUp does not transmit tab information, preferences or diagnostics to its developer or third parties. It contains no analytics, advertising, remote code or server component. Its extension policy includes `connect-src 'none'`.
 
-Firefox самостоятельно обращается к Mozilla для функций каталога, подписи и обновлений дополнений. Когда вы возвращаетесь к выгруженной вкладке, Firefox снова загружает сайт, и сайт получает обычный запрос. Это не отправка данных разработчику FireUp.
+Firefox makes its own connections to Mozilla for add-on services and updates. Revisiting a discarded tab reloads that website through Firefox; this is not a transmission to the FireUp developer.
 
-## Экспорт и сообщения об ошибках
+## Export and support
 
-Экспорт настроек создаёт локальный JSON с рабочим набором, таймером, темой, состоянием автосна, переключателем защиты от повторного сна и доменами-исключениями. Адресов открытых вкладок, очереди и защиты отдельных вкладок в нём нет. Вы сами выбираете, где хранить файл и кому его отправлять.
+Settings export creates a local JSON file containing preferences and excluded domains, not open-tab URLs, queues or per-tab protections. Users choose where to store the file and whether to share it.
 
-GitHub Issues получает только те сведения, которые вы сами туда публикуете. Эти сообщения публичные. Перед отправкой удаляйте частные домены, адреса, имена и данные аккаунтов. Для вопроса о работе с данными можно открыть Issue без личных сведений.
+GitHub receives information only when users submit it themselves. [Issues](https://github.com/tyvor/fireup-optimize/issues) and attachments are public. Remove private domains, URLs, names and account information before posting. Data-handling questions can be filed without personal information.
 
-## Несохранённый ввод
+## Unsaved input
 
-FireUp не распознаёт все редакторы, формы и тихое воспроизведение. Вручную защитите важную вкладку или сайт до выгрузки. Расширение не обещает сохранить несохранённые данные страницы.
+FireUp cannot detect every unsaved form, editor or silent playback state. Protect important tabs or domains manually before unloading. It does not guarantee preservation of unsaved page state.
