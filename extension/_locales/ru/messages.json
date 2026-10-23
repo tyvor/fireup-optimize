@@ -1,0 +1,5 @@
+{
+  "extensionName": { "message": "FireUp" },
+  "extensionDescription": { "message": "Автосон вкладок с рабочим набором, исключениями сайтов и ручной защитой." },
+  "unloadCommand": { "message": "Усыпить фоновые вкладки без защиты во всех окнах" }
+}
