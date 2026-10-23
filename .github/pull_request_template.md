@@ -1,5 +1,5 @@
-## Что изменилось
+## Changes
 
-## Проверка
+## Verification
 
-Укажите выполненные проверки и их результат, включая настоящий Firefox, если менялись браузерные API.
+List the checks performed and their results. Include native Firefox testing when changing browser APIs.
