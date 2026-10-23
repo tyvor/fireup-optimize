@@ -1,26 +1,25 @@
 <!doctype html>
-<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Настройки FireUp</title><link rel="stylesheet" href="ui.css"></head><body class="settings-page">
-<header><h1>Настройки FireUp</h1><span class="muted">0.3.0</span></header>
-<p id="loading" role="status">Загружаю настройки…</p>
+<html lang="en" data-title="FireUp settings"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FireUp settings</title><link rel="stylesheet" href="ui.css"></head><body class="settings-page">
+<header><h1 data-i18n="FireUp settings">FireUp settings</h1><span class="muted">0.4.0</span></header>
+<p id="loading" role="status" data-i18n="Loading settings…">Loading settings…</p>
 <form id="settings" hidden>
-<div class="setting"><label for="keep">Рабочий набор</label><input id="keep" type="number" min="1" max="100" required><small>Столько последних использованных вкладок останется загруженными. Защищённые вкладки могут увеличить это число.</small></div>
-<div class="setting"><label for="idle">Простой до сна, минут</label><input id="idle" type="number" min="1" max="1440" required><small>Вкладки вне рабочего набора засыпают после этого времени. Фоновая перезагрузка не считается вашим обращением.</small></div>
-<div class="setting inline"><input id="anti-thrash" type="checkbox"><label for="anti-thrash">Увеличивать отсрочку после быстрого возврата</label></div>
-<p class="setting-help">Если вы вернули выгруженную FireUp вкладку за две минуты, её следующий автосон откладывается. При таймере 10 минут отсрочка растёт: 20, 40, 80 и до 120 минут. Ручная выгрузка остаётся доступна.</p>
-<div class="setting"><label for="sites">Никогда не усыплять сайты</label><textarea id="sites" placeholder="По одному домену в строке"></textarea><small>Домен защищает и поддомены. Укажите chatgpt.com, если хотите защитить все его вкладки. Не вводите пути, порты или звёздочки.</small></div>
-<div class="setting"><label for="theme">Оформление</label><select id="theme"><option value="system">Как в системе</option><option value="light">Светлое</option><option value="dark">Тёмное</option></select></div>
-<button type="submit" class="primary">Сохранить настройки</button><p id="saved" role="status" aria-live="polite"></p>
-</form><button id="retry" hidden>Повторить загрузку</button>
+<div class="setting"><label for="keep" data-i18n="Recent working set">Recent working set</label><input id="keep" type="number" min="1" max="100" required><small data-i18n="Keep this many recently used tabs loaded. Protected tabs may increase the total.">Keep this many recently used tabs loaded. Protected tabs may increase the total.</small></div>
+<div class="setting"><label for="idle" data-i18n="Idle time before sleep, minutes">Idle time before sleep, minutes</label><input id="idle" type="number" min="1" max="1440" required><small data-i18n="Tabs outside the working set can sleep after this time. Background reloads do not count as visits.">Tabs outside the working set can sleep after this time. Background reloads do not count as visits.</small></div>
+<div class="setting inline"><input id="anti-thrash" type="checkbox"><label for="anti-thrash" data-i18n="Delay sleep after a quick return">Delay sleep after a quick return</label></div>
+<p class="setting-help" data-i18n="Returning within two minutes of a FireUp unload delays the next automatic sleep. With a 10-minute timer, the delay grows to 20, 40, 80 and 120 minutes. Manual unloading remains available.">Returning within two minutes of a FireUp unload delays the next automatic sleep. With a 10-minute timer, the delay grows to 20, 40, 80 and 120 minutes. Manual unloading remains available.</p>
+<div class="setting"><label for="sites" data-i18n="Never unload these sites">Never unload these sites</label><textarea id="sites" placeholder="One domain per line" data-i18n-placeholder="One domain per line"></textarea><small data-i18n="A domain also protects its subdomains. Use chatgpt.com to protect all its tabs. Do not include paths, ports or wildcards.">A domain also protects its subdomains. Use chatgpt.com to protect all its tabs. Do not include paths, ports or wildcards.</small></div>
+<div class="setting"><label for="theme" data-i18n="Appearance">Appearance</label><select id="theme"><option value="system" data-i18n="System">System</option><option value="light" data-i18n="Light">Light</option><option value="dark" data-i18n="Dark">Dark</option></select></div>
+<div class="setting"><label for="language" data-i18n="Language">Language</label><select id="language"><option value="auto" data-i18n="Browser default">Browser default</option><option value="en">English</option><option value="ru">Русский</option></select><small data-i18n="Uses the browser interface language. Other languages fall back to English.">Uses the browser interface language. Other languages fall back to English.</small></div>
+<button type="submit" class="primary" data-i18n="Save settings">Save settings</button><p id="saved" role="status" aria-live="polite"></p>
+</form><button id="retry" hidden data-i18n="Retry">Retry</button>
 <section id="transfer" class="transfer" aria-labelledby="transfer-title" hidden>
-<h2 id="transfer-title">Перенос настроек</h2>
-<p class="muted">Экспорт сохраняет применённые настройки и исключения сайтов. Защита отдельных вкладок и их адреса в файл не входят.</p>
-<div class="transfer-actions"><button id="export" class="outlined">Экспортировать настройки</button><label for="import-file">Выбрать файл для импорта</label><input id="import-file" type="file" accept=".json,application/json"></div>
+<h2 id="transfer-title" data-i18n="Settings transfer">Settings transfer</h2>
+<p class="muted" data-i18n="Export includes applied settings and excluded domains. Per-tab protection and open-tab URLs are not included.">Export includes applied settings and excluded domains. Per-tab protection and open-tab URLs are not included.</p>
+<div class="transfer-actions"><button id="export" class="outlined" data-i18n="Export settings">Export settings</button><label for="import-file" data-i18n="Choose an import file">Choose an import file</label><input id="import-file" type="file" accept=".json,application/json"></div>
 <div id="import-preview" hidden>
-<h3>Настройки из файла</h3><p id="import-summary"></p><label for="import-sites">Исключения сайтов</label><textarea id="import-sites" rows="3" readonly></textarea>
-<p class="muted">Кнопка ниже заменит текущие настройки значениями из файла, включая состояние автосна.</p>
-<div class="transfer-actions"><button id="apply-import" class="primary">Применить импорт</button><button id="cancel-import" class="outlined">Отмена</button></div>
-</div>
-<p id="transfer-status" role="status" aria-live="polite"></p>
-</section>
-<footer>FireUp не читает содержимое страниц и не распознаёт все формы и тихое воспроизведение. Перед работой с несохранённым вводом защитите вкладку или сайт. Текущие, закреплённые, звучащие вкладки и известные Firefox звонки пропускаются. Приватные вкладки не обрабатываются.<br><br>Alt+Shift+U выгружает фоновые вкладки без защиты во всех окнах. Само расширение не закрывает вкладки и не завершает процессы.</footer>
-<script src="policy.js"></script><script src="transfer.js"></script><script src="ui-common.js"></script><script src="options.js"></script></body></html>
+<h3 data-i18n="Settings from file">Settings from file</h3><p id="import-summary"></p><label for="import-sites" data-i18n="Excluded sites">Excluded sites</label><textarea id="import-sites" rows="3" readonly></textarea>
+<p class="muted" data-i18n="Applying this file replaces all current settings, including whether automatic sleep is enabled.">Applying this file replaces all current settings, including whether automatic sleep is enabled.</p>
+<div class="transfer-actions"><button id="apply-import" class="primary" data-i18n="Apply import">Apply import</button><button id="cancel-import" data-i18n="Cancel">Cancel</button></div>
+</div><p id="transfer-status" role="status" aria-live="polite"></p></section>
+<footer><span data-i18n="FireUp does not read page contents or detect every form or silent playback. Protect tabs or sites with unsaved input. Active, pinned, audible tabs and browser-reported calls are skipped. Private tabs are excluded.">FireUp does not read page contents or detect every form or silent playback. Protect tabs or sites with unsaved input. Active, pinned, audible tabs and browser-reported calls are skipped. Private tabs are excluded.</span><br><br><span data-i18n="Alt+Shift+U unloads unprotected background tabs in all windows. FireUp does not close tabs or terminate processes.">Alt+Shift+U unloads unprotected background tabs in all windows. FireUp does not close tabs or terminate processes.</span></footer>
+<script src="i18n.js"></script><script src="policy.js"></script><script src="transfer.js"></script><script src="ui-common.js"></script><script src="options.js"></script></body></html>

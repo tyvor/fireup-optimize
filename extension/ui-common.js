@@ -5,8 +5,14 @@ const FireUpUI = {
     if (value === 'light' || value === 'dark') document.documentElement.dataset.theme = value;
     else delete document.documentElement.dataset.theme;
   },
-  async initialTheme() {
-    try { const data = await browser.storage.local.get('settings'); this.theme(data.settings?.theme || 'system'); } catch {}
+  configure(settings) {
+    this.theme(settings.theme);
+    const language = FireUpI18n.set(settings.language);
+    if (document.documentElement.lang !== language) FireUpI18n.apply();
+  },
+  async initialize() {
+    FireUpI18n.apply();
+    try { const data = await browser.storage.local.get('settings'); this.configure(data.settings || {}); } catch {}
   }
 };
-FireUpUI.initialTheme();
+FireUpUI.ready = FireUpUI.initialize();

@@ -1,15 +1,17 @@
 (function (root) {
   'use strict';
-  const DEFAULTS = Object.freeze({ enabled: true, keepRecent: 10, idleMinutes: 10, sites: [], theme: 'system', antiThrash: true });
+  const DEFAULTS = Object.freeze({ enabled: true, keepRecent: 10, idleMinutes: 10, sites: [], theme: 'system', antiThrash: true, language: 'auto' });
   function host(value) {
     try { const u = new URL(value); return /^https?:$/.test(u.protocol) ? u.hostname.toLowerCase().replace(/\.$/, '') : ''; }
     catch { return ''; }
   }
   function site(value) {
     const text = String(value).trim();
-    const u = new URL(text.includes('://') ? text : `https://${text}`);
+    let u;
+    try { u = new URL(text.includes('://') ? text : `https://${text}`); }
+    catch { throw new Error('Enter a domain without a path or port, such as chatgpt.com.'); }
     if (text.includes('*') || /[%*]/.test(u.hostname) || !host(u.href) || u.hostname.length > 253 || u.username || u.password || u.port || u.pathname !== '/' || u.search || u.hash) {
-      throw new Error('Введите домен без пути и порта, например chatgpt.com.');
+      throw new Error('Enter a domain without a path or port, such as chatgpt.com.');
     }
     return host(u.href);
   }
@@ -20,6 +22,7 @@
       keepRecent: Number.isInteger(v.keepRecent) && v.keepRecent >= 1 && v.keepRecent <= 100 ? v.keepRecent : 10,
       idleMinutes: Number.isInteger(v.idleMinutes) && v.idleMinutes >= 1 && v.idleMinutes <= 1440 ? v.idleMinutes : 10,
       theme: ['system', 'light', 'dark'].includes(v.theme) ? v.theme : 'system',
+      language: ['auto', 'en', 'ru'].includes(v.language) ? v.language : 'auto',
       antiThrash: typeof v.antiThrash === 'boolean' ? v.antiThrash : true,
       sites: [...new Set((Array.isArray(v.sites) ? v.sites : []).flatMap(s => { try { return [site(s)]; } catch { return []; } }))].slice(0, 500)
     };
@@ -32,18 +35,18 @@
     return null;
   }
   function reason(tab, config, protectedValue) {
-    if (tab.incognito) return 'Приватная вкладка';
-    if (tab.active) return 'Текущая вкладка';
-    if (tab.pinned) return 'Закреплена';
-    if (tab.audible) return 'Есть звук';
-    if (tab.sharingState && (tab.sharingState.camera || tab.sharingState.microphone || tab.sharingState.screen)) return 'Звонок или демонстрация';
-    if (tab.status === 'loading') return 'Загружается';
-    if (!host(tab.url)) return 'Служебная страница';
-    if (tab.autoDiscardable === false) return 'Защита Firefox';
-    if (protectedValue?.mode === 'unknown') return 'Не удалось проверить защиту';
-    if (protectedValue) return protectedValue.mode === 'timed' ? 'Временная защита' : 'Ручная защита';
+    if (tab.incognito) return 'Private tab';
+    if (tab.active) return 'Active tab';
+    if (tab.pinned) return 'Pinned';
+    if (tab.audible) return 'Playing audio';
+    if (tab.sharingState && (tab.sharingState.camera || tab.sharingState.microphone || tab.sharingState.screen)) return 'Call or screen sharing';
+    if (tab.status === 'loading') return 'Loading';
+    if (!host(tab.url)) return 'Internal page';
+    if (tab.autoDiscardable === false) return 'Protected by Firefox';
+    if (protectedValue?.mode === 'unknown') return 'Could not verify protection';
+    if (protectedValue) return protectedValue.mode === 'timed' ? 'Temporary protection' : 'Manual protection';
     const name = host(tab.url);
-    if (config.sites.some(s => name === s || name.endsWith(`.${s}`))) return 'Сайт в исключениях';
+    if (config.sites.some(s => name === s || name.endsWith(`.${s}`))) return 'Excluded site';
     return '';
   }
   function recentIds(tabs, config, meta) {

@@ -1,9 +1,9 @@
 {
   "manifest_version": 2,
-  "name": "FireUp",
-  "version": "0.3.0",
+  "name": "__MSG_extensionName__",
+  "version": "0.4.0",
   "homepage_url": "https://github.com/tyvor/fireup-optimize",
-  "description": "Автосон вкладок с защитой рабочего набора и управлением очередью.",
+  "description": "__MSG_extensionDescription__",
   "permissions": [
     "tabs",
     "storage",
@@ -13,6 +13,7 @@
   ],
   "background": {
     "scripts": [
+      "i18n.js",
       "policy.js",
       "transfer.js",
       "engine.js",
@@ -38,7 +39,7 @@
       "suggested_key": {
         "default": "Alt+Shift+U"
       },
-      "description": "Усыпить фоновые вкладки без защиты во всех окнах"
+      "description": "__MSG_unloadCommand__"
     }
   },
   "content_security_policy": "script-src 'self'; object-src 'none'; img-src 'self' data: moz-annotation:; connect-src 'none'; style-src 'self'",
@@ -52,5 +53,6 @@
         ]
       }
     }
-  }
+  },
+  "default_locale": "en"
 }

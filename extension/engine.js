@@ -100,8 +100,8 @@
       const result = tabs.map(t => {
         const protection = values.get(t.id), reason = P.reason(t, config, protection);
         const due = P.deadline(t, config, data.meta[t.id], graceUntil);
-        const note = reason || (!config.enabled ? 'Автосон на паузе' : recent.has(t.id) ? 'В рабочем наборе' : graceUntil > now() ? 'Отсрочка первого запуска' : '');
-        return { antiThrashUntil: config.antiThrash ? data.meta[t.id]?.holdUntil || 0 : 0, id: t.id, windowId: t.windowId, title: t.title || P.host(t.url) || 'Вкладка', host: P.host(t.url),
+        const note = reason || (!config.enabled ? 'Automatic sleep paused' : recent.has(t.id) ? 'In working set' : graceUntil > now() ? 'First-install grace period' : '');
+        return { antiThrashUntil: config.antiThrash ? data.meta[t.id]?.holdUntil || 0 : 0, id: t.id, windowId: t.windowId, title: t.title || P.host(t.url) || 'Untitled tab', host: P.host(t.url),
           icon: typeof t.favIconUrl === 'string' && /^(data:image\/(?:png|jpeg|gif|webp|x-icon|vnd.microsoft.icon);base64,|moz-annotation:)/i.test(t.favIconUrl) ? t.favIconUrl : '',
           active: t.active, discarded: Boolean(t.discarded), protection, reason, note,
           recent: recent.has(t.id), deadline: Number.isFinite(due) ? due : null, canSleep: !t.discarded && !reason };
@@ -118,7 +118,7 @@
       if (input.type === 'window' && Number.isInteger(input.windowId)) return { type: 'window', windowId: input.windowId };
       if (input.type === 'site' && P.host(`https://${input.host}`) === input.host) return { type: 'site', host: input.host };
       if (input.type === 'selected' && Array.isArray(input.ids) && input.ids.every(Number.isInteger)) return { type: 'selected', ids: input.ids };
-      throw new Error('Неизвестная область выгрузки.');
+      throw new Error('Unknown unload scope.');
     }
     async function start(manual, input = { type: 'all' }, approvedIds) {
       await ready;
@@ -197,12 +197,12 @@
       changed();
     }
     function setProtection(id, mode) {
-      if (!Number.isInteger(id) || !['none', 'permanent', '30', '60'].includes(mode)) return Promise.reject(new Error('Неверный режим защиты.'));
+      if (!Number.isInteger(id) || !['none', 'permanent', '30', '60'].includes(mode)) return Promise.reject(new Error('Invalid protection mode.'));
       pendingProtections.add(id);
       return serial(id, async () => {
         await ready;
         const tab = await browser.tabs.get(id);
-        if (tab.incognito) throw new Error('Приватные вкладки не обрабатываются.');
+        if (tab.incognito) throw new Error('Private tabs are not processed.');
         meta(id).revision++;
         const value = mode === 'none' ? null : mode === 'permanent' ? { mode: 'permanent', until: 0 } : { mode: 'timed', until: now() + Number(mode) * 60000 };
         await browser.sessions.setTabValue(id, KEY, value || false);
