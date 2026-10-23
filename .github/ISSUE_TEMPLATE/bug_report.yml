@@ -1,52 +1,51 @@
-name: Ошибка / Bug report
-description: Что-то работает неправильно / Something is not working
+name: Bug report
+description: Report a problem with FireUp
 title: "[Bug] "
 body:
   - type: markdown
     attributes:
       value: |
-        Issues и вложения публичные. Не отправляйте профиль Firefox, cookies, токены, историю или частные адреса. Скройте личные данные на скриншотах. Можно писать по-русски или по-английски.
-        Issues are public. Remove personal data before posting.
+        Issues and attachments are public. Do not upload Firefox profiles, cookies, tokens, browsing history or private URLs. Redact personal information in screenshots. Reports may be written in English or Russian.
   - type: input
     id: fireup-version
     attributes:
-      label: Версия FireUp / FireUp version
-      placeholder: 0.3.0
+      label: FireUp version
+      placeholder: 0.4.0
     validations:
       required: true
   - type: input
     id: environment
     attributes:
-      label: Firefox и ОС / Firefox and OS
-      placeholder: Версия Firefox, обычный или ESR; версия ОС
+      label: Firefox and operating system
+      placeholder: Firefox version and release channel; OS version
     validations:
       required: true
   - type: textarea
     id: steps
     attributes:
-      label: Шаги воспроизведения / Steps to reproduce
-      description: Какие действия вызывают проблему? Адрес сайта указывайте только если его можно раскрыть.
+      label: Steps to reproduce
+      description: Describe the actions that trigger the problem. Include a domain only if you can disclose it publicly.
     validations:
       required: true
   - type: textarea
     id: expected
     attributes:
-      label: Ожидаемый результат / Expected result
+      label: Expected result
     validations:
       required: true
   - type: textarea
     id: actual
     attributes:
-      label: Что произошло / Actual result
+      label: Actual result
     validations:
       required: true
   - type: textarea
     id: settings
     attributes:
-      label: Настройки и состояние вкладок / Settings and tab state
-      description: Рабочий набор, таймер, число вкладок, закрепление, звук, защита. Полный экспорт не обязателен.
+      label: Settings and tab state
+      description: Working-set size, idle timer, tab count, pinning, audio and protection. A full export is not required.
   - type: textarea
     id: evidence
     attributes:
-      label: Дополнительные сведения / Additional details
-      description: Обезличенный скриншот или текст ошибки. Для памяти укажите, где и когда измеряли и что изменилось после выгрузки.
+      label: Additional details
+      description: Redacted screenshot or error text. For memory issues, state where and when you measured and what changed after unloading.
