@@ -1,8 +1,8 @@
-# Скриншоты FireUp
+# Interface screenshots
 
-Изображения показывают интерфейс 0.3.0 на демонстрационном наборе вкладок. Они получены в Chromium при проверке интерфейса с имитацией Firefox API. Замеры памяти на них не представлены.
+These images show the current FireUp interface with demonstration tabs. They were captured in Chromium using mocked Firefox APIs. They do not present memory measurements.
 
-- popup-light.png: панель, светлая тема.
-- popup-dark.png: панель, тёмная тема.
-- settings.png: настройки.
-- settings-transfer.png: предпросмотр импорта настроек.
+- popup-light.png: tab panel, light theme.
+- popup-dark.png: tab panel, dark theme.
+- settings.png: preferences and language selector.
+- settings-transfer.png: settings import preview.
