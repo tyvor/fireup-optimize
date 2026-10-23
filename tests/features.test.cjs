@@ -50,9 +50,9 @@ test('return arriving before post-discard inspection is still recognized after c
 test('export/import round trip contains settings only and preserves fields', async () => {
   const h = harness(); await h.engine.saveSettings({ enabled: false, theme: 'dark', antiThrash: false, sites: ['EXAMPLE.org'] }); await h.engine.setProtection(1, 'permanent');
   const text = await h.engine.exportSettings(), doc = T.parse(text);
-  assert.equal(doc.formatVersion, 1); assert.equal(doc.settings.sites[0], 'example.org');
+  assert.equal(doc.formatVersion, 2); assert.equal(doc.settings.sites[0], 'example.org');
   assert.equal(doc.settings.antiThrash, false); assert.equal(text.includes('https://'), false);
-  assert.deepEqual(Object.keys(doc.settings).sort(), ['antiThrash', 'enabled', 'idleMinutes', 'keepRecent', 'sites', 'theme']);
+  assert.deepEqual(Object.keys(doc.settings).sort(), ['antiThrash', 'enabled', 'idleMinutes', 'keepRecent', 'language', 'sites', 'theme']);
   const next = harness(); await next.engine.importSettings(text); assert.deepEqual(await next.engine.getSettings(), doc.settings);
 });
 test('preview is read-only and settings operations do not scan tabs', async () => {
@@ -62,7 +62,7 @@ test('preview is read-only and settings operations do not scan tabs', async () =
 });
 test('invalid schema, types, bounds, sites and unsupported formats are rejected without mutation', async () => {
   const h = harness(), good = JSON.parse(await h.engine.exportSettings()); const before = await h.engine.getSettings();
-  const mutations = [d => d.application = 'Other', d => d.formatVersion = 2, d => d.settings.keepRecent = 0, d => d.settings.keepRecent = '10', d => d.settings.idleMinutes = 1441, d => d.settings.enabled = 1, d => d.settings.antiThrash = 'true', d => d.settings.theme = 'auto', d => d.settings.sites = ['*.example.org'], d => d.settings.sites = ['https://example.org/path'], d => d.settings.sites = Array(501).fill('example.org'), d => d.settings.unknown = true, d => delete d.settings.enabled, d => d.tabs = [{ url: 'https://example.org' }], d => d.exportedAt = 'garbage'];
+  const mutations = [d => d.application = 'Other', d => d.formatVersion = 3, d => d.settings.keepRecent = 0, d => d.settings.keepRecent = '10', d => d.settings.idleMinutes = 1441, d => d.settings.enabled = 1, d => d.settings.antiThrash = 'true', d => d.settings.theme = 'auto', d => d.settings.sites = ['*.example.org'], d => d.settings.sites = ['https://example.org/path'], d => d.settings.sites = Array(501).fill('example.org'), d => d.settings.unknown = true, d => delete d.settings.enabled, d => d.tabs = [{ url: 'https://example.org' }], d => d.exportedAt = 'garbage'];
   for (const mutate of mutations) { const bad = structuredClone(good); mutate(bad); await assert.rejects(h.engine.importSettings(JSON.stringify(bad))); assert.deepEqual(await h.engine.getSettings(), before); }
   for (const raw of ['null', '[]', '{}', '{', JSON.stringify(good).replace('"settings":', '"__proto__":{},"settings":')]) await assert.rejects(h.engine.importSettings(raw));
 });

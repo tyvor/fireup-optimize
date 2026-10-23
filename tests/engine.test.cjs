@@ -3,7 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { P, harness } = require('./harness.cjs');
 test('settings migrate old preferences, normalize domains and reject wildcards', () => {
-  assert.deepEqual(P.settings({ keepRecent: 8, idleMinutes: 20, sites: ['EXAMPLE.com'] }), { enabled: true, keepRecent: 8, idleMinutes: 20, sites: ['example.com'], theme: 'system', antiThrash: true });
+  assert.deepEqual(P.settings({ keepRecent: 8, idleMinutes: 20, sites: ['EXAMPLE.com'] }), { enabled: true, keepRecent: 8, idleMinutes: 20, sites: ['example.com'], theme: 'system', antiThrash: true, language: 'auto' });
   assert.equal(P.settings(null).keepRecent, 10);
   for (const value of ['*.example.com', 'example.com/path', 'https://u:p@example.com', 'example.com:4433', 'file:///a']) assert.throws(() => P.site(value));
 });
@@ -14,7 +14,7 @@ test('never unloads active, pinned, audible, capture, loading, private and servi
 });
 test('domain exceptions include subdomains without matching suffix impostors', () => {
   const c = P.settings({ sites: ['example.com'] });
-  assert.equal(P.reason({ url: 'https://mail.example.com' }, c, null), 'Сайт в исключениях');
+  assert.equal(P.reason({ url: 'https://mail.example.com' }, c, null), 'Excluded site');
   assert.equal(P.reason({ url: 'https://evilexample.com' }, c, null), '');
 });
 test('manual queue skips tabs accessed after initial selection, even after returning to background', async () => {
