@@ -1,6 +1,6 @@
-# Mozilla listing: English
+# Text for the Mozilla listing
 
-Prepared copy for the submission form. This document does not mean the add-on has been submitted or published on Mozilla.
+Use these sections when editing the existing FireUp listing. Publishing source on GitHub doesn't update the Mozilla version.
 
 ## Name
 
@@ -8,46 +8,47 @@ FireUp
 
 ## Summary
 
-Unload idle Firefox tabs with a recent working set, site exclusions and manual protection for important tabs.
+Unload idle Firefox tabs while keeping recent tabs, protected tabs and excluded sites loaded.
 
 ## Description
 
-FireUp unloads idle tabs to reduce their memory use. Tabs stay in Firefox and reload when you return to them.
+FireUp is for people who keep a lot of tabs open but only use a few at a time. It unloads idle tabs to reduce their memory use. The tabs stay in Firefox and reload when you return to them.
 
-Protect unsaved text, editors and silent playback before unloading. FireUp does not read page contents and cannot detect every such case. Unloading a page may lose unsaved data.
+By default, your 10 most recently used tabs stay loaded. Other tabs can sleep after 10 minutes of inactivity. You can adjust both settings.
 
-By default, your 10 most recently used tabs stay loaded and other tabs can sleep after 10 minutes of inactivity. Adjust both values in settings. The first installation includes a grace period to configure protections.
+Active tabs in each window, pinned tabs and tabs playing audio are skipped. FireUp also skips calls and screen sharing when Firefox reports them. Private tabs are excluded.
 
-Active tabs in each window, pinned tabs and audible tabs are skipped. FireUp also skips camera, microphone and screen-sharing activity when Firefox reports that state. Private tabs are excluded.
+Protect important tabs for 30 minutes, an hour, or until you remove protection. You can also exclude a whole site, including its subdomains. The first installation includes a grace period to set up protections.
 
-Search and filter the tab list, then manually unload selected tabs, a window, all windows or a site. Preview the candidate count and stop a running queue. Manual unloading ignores the recent working set and automatic delays while respecting protections and site exclusions.
+Please protect unsaved forms, editors and silent playback yourself. FireUp doesn't read page contents and can't reliably detect all of them. Unloading a page may lose unsaved work.
 
-Protect a tab for 30 minutes, one hour or until protection is removed. A domain exclusion also covers subdomains. Returning quickly to a tab unloaded by FireUp delays its next automatic sleep.
+The panel has search, filters and manual commands for the current window, all windows, selected tabs or a site. The button shows the scope and eligible count, and you can stop a running queue. Search and filters only change the displayed list; hidden tabs in the selected scope are still included. Choose Selected tabs to use only checked rows.
 
-Choose light, dark or system appearance. The interface supports English and Russian. It initially follows the Firefox interface language, with English as the fallback. You can save a manual language choice in settings.
+Manual commands skip the automatic waiting periods while still respecting protection and site exclusions. Alt+Shift+U applies across all windows. Pausing automatic sleep leaves manual commands available.
 
-Export preferences and excluded domains to a local JSON file. Import includes validation and a preview before replacing settings. Alt+Shift+U manually unloads unprotected background tabs in all windows.
+Returning quickly to a tab unloaded by FireUp delays its next automatic sleep. Choose light, dark or system appearance. The interface starts in English or Russian according to Firefox's language, with a manual override in settings.
 
-FireUp processes tab information locally and does not send it to its developer. It contains no analytics, advertising or server component and does not read form text. Source code is available under MIT, with bug reports handled through GitHub Issues.
+Settings can be exported to a local JSON file and imported with a preview. The file contains preferences and excluded domains, not open tabs or per-tab protection.
 
-Requires desktop Firefox 140 or later. Memory savings depend on the pages and Firefox; no fixed reduction is promised.
+Tab information stays in your Firefox profile. FireUp has no analytics, advertising or server component. The source is available under the MIT license, and bugs and suggestions are welcome on GitHub.
 
-## Submission fields
+Requires desktop Firefox 140 or newer. Memory savings depend on the pages and Firefox.
+
+## Other form fields
 
 - License: MIT.
-- Platform: desktop Firefox. Do not select Android without verification.
-- Category: tab management, if available in the submission form.
-- Paid features or required external services: none.
+- Platform: desktop Firefox. Leave Android unselected; it hasn't been tested.
+- Category: Tabs.
+- Paid features or required services: none.
 - Homepage: https://github.com/tyvor/fireup-optimize
-- Support website: https://github.com/tyvor/fireup-optimize/issues
+- Support: https://github.com/tyvor/fireup-optimize/issues
 - Privacy notice: https://github.com/tyvor/fireup-optimize/blob/main/PRIVACY.md
-- No support email has been assumed. The author must supply one if the form requires it.
 
-## Screenshots
+## Screenshot captions
 
-1. `docs/images/popup-light.png`: Tab search, protection and manual unloading. Demonstration data.
-2. `docs/images/popup-dark.png`: The tab panel in the dark theme. Demonstration data.
-3. `docs/images/settings.png`: Working set, timer, site exclusions and language selection. Demonstration data.
-4. `docs/images/settings-transfer.png`: Settings import preview before application. Demonstration data.
+1. `docs/images/popup-light.png`: Search tabs, protect important pages and choose what to unload.
+2. `docs/images/popup-dark.png`: The same tab panel in the dark theme.
+3. `docs/images/settings.png`: Adjust the recent-tab count, idle timer, site exclusions and language.
+4. `docs/images/settings-transfer.png`: Review a settings file before applying it.
 
-Screenshots show the current interface with mocked Firefox APIs in Chromium. They do not show measured memory savings. They can be replaced with captures from installed FireUp in Firefox.
+These screenshots use demonstration data and modeled Firefox APIs in Chromium. They show the interface, not measured memory savings. Captures from installed FireUp in Firefox can replace them.

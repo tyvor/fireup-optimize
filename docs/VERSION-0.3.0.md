@@ -1,3 +1,3 @@
-# FireUp 0.3.0 history
+# FireUp 0.3.0
 
-Version 0.3.0 introduced quick-return sleep delays and local JSON settings transfer with preview. See the [changelog](../CHANGELOG.md) for the current version and the [README](../README.md) for installation.
+0.3.0 added longer sleep delays after a quick return and local settings export and import with a preview. The [changelog](../CHANGELOG.md) covers later changes; the [README](../README.md) has current installation instructions.

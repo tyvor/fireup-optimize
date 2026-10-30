@@ -1,15 +1,17 @@
-# Permissions
+# Why FireUp needs these permissions
 
-| Permission | How FireUp uses it |
+| Permission | What it's used for |
 | --- | --- |
-| `tabs` | Reads open-tab titles and URLs for the panel, domain exclusions and navigation checks before unloading. |
-| `storage` | Stores preferences locally and temporary working state for the current browser run. |
-| `alarms` | Schedules automatic checks, queue continuation and expiration of temporary protection. |
-| `menus` | Adds protection and unloading commands to the tab context menu. |
-| `sessions` | Saves protection associated with an individual tab through Firefox's sessions API. |
+| `tabs` | Show open-tab titles and URLs, match site exclusions and check whether a page changed before unloading it. |
+| `storage` | Save your settings and keep temporary queue and activity data for the current browser run. |
+| `alarms` | Run automatic checks, continue a queue and expire temporary protection. |
+| `menus` | Add protection and unload commands to a tab's context menu. |
+| `sessions` | Keep protection attached to an individual tab through Firefox's sessions API. |
 
-The `tabs` permission exposes sensitive tab metadata. FireUp processes it locally as described in [PRIVACY.md](../PRIVACY.md). It does not request website-content host permissions, `history`, `cookies` or `webRequest`.
+`tabs` gives FireUp access to sensitive tab metadata. The extension handles it locally; [Privacy](../PRIVACY.md) explains what is stored and for how long.
 
-The manifest declares `data_collection_permissions.required: ["none"]`. This describes the absence of data collection by the developer; tab URLs are still processed locally to provide the extension's features.
+FireUp doesn't request website-content host permissions, browsing history, cookies or `webRequest`. It doesn't inject scripts into websites.
 
-Language detection uses `browser.i18n.getUILanguage()` without adding a permission. English and Russian strings are packaged with the extension; no translation service is contacted.
+The manifest says `data_collection_permissions.required: ["none"]` because the developer doesn't collect or receive your data. FireUp still needs to read tab information locally to do its job.
+
+Reading Firefox's UI language needs no extra permission. The English and Russian translations are included with the extension, so language selection doesn't contact a service.
