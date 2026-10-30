@@ -1,7 +1,7 @@
 (function (root) {
   'use strict';
   const P = root.FireUpPolicy;
-  const VERSION = '0.4.1', FORMAT_VERSION = 2, MAX_BYTES = 256 * 1024;
+  const VERSION = '0.4.2', FORMAT_VERSION = 2, MAX_BYTES = 256 * 1024;
   const LEGACY_FIELDS = ['enabled', 'keepRecent', 'idleMinutes', 'sites', 'theme', 'antiThrash'];
   const FIELDS = [...LEGACY_FIELDS, 'language'];
   function object(value) { return value !== null && typeof value === 'object' && !Array.isArray(value); }

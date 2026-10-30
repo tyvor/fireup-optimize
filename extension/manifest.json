@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "__MSG_extensionName__",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "homepage_url": "https://github.com/tyvor/fireup-optimize",
   "description": "__MSG_extensionDescription__",
   "permissions": [
@@ -16,6 +16,7 @@
       "i18n.js",
       "policy.js",
       "transfer.js",
+      "working-set.js",
       "engine.js",
       "background.js"
     ],
