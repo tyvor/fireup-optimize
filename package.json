@@ -1,15 +1,16 @@
 {
   "name": "fireup",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "private": true,
   "license": "MIT",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
-    "test": "node --test tests/engine.test.cjs tests/features.test.cjs tests/i18n.test.cjs tests/protection.test.cjs",
-    "test:ui": "node tests/ui.test.cjs && node tests/i18n-ui.test.cjs",
+    "test": "node --test tests/engine.test.cjs tests/features.test.cjs tests/i18n.test.cjs tests/protection.test.cjs tests/working-set.test.cjs tests/queue.test.cjs",
+    "test:ui": "node tests/ui.test.cjs && node tests/i18n-ui.test.cjs && node tests/popup-sizing.test.cjs",
     "check:source": "node tests/check-source.cjs",
+    "benchmark": "node --expose-gc tests/benchmark.cjs",
     "lint:addon": "node tests/lint-addon.cjs"
   },
   "devDependencies": {

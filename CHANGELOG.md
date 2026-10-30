@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.2
+
+- Automatic unloading now keeps the recent working set up to date from tab events. It no longer requests and sorts the full tab list before every batch. Each candidate still gets its own final check, and the index is rebuilt after the background page wakes.
+- Queue entries are saved once per operation, with smaller progress checkpoints afterward. Refreshing an unchanged panel no longer rewrites session state.
+- Added a 320-pixel minimum popup width. This prevents the CSS from collapsing with a tiny initial viewport; the reported intermittent Firefox first-opening problem still needs native confirmation.
+- Removed repeated site-option scans and repeated scope construction while updating the panel.
+- Added queue, working-set and startup-sizing tests, plus a repeatable model benchmark for 100, 500 and 1000 tabs. See [Performance](docs/PERFORMANCE.md) for results and limits.
+
 ## 0.4.1
 
 - Fixed two timing bugs that could remove or hide a tab's newly assigned protection. A late read can no longer overwrite a newer change, and an old timer can't remove protection that has just been renewed.
