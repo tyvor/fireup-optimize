@@ -1,3 +1,5 @@
-# Tests
+# Running the tests
 
-Run `npm test` from the project root for policy, engine and localization checks. Run `npm run test:ui` for general and localization interface scenarios. See [BUILD-INSTRUCTIONS.md](../BUILD-INSTRUCTIONS.md) for setup and [TESTING.md](../docs/TESTING.md) for coverage and limits.
+From the repository root, run `npm test` for policy, engine, protection and language checks. These use Node's built-in runner and don't need npm dependencies.
+
+For interface checks, install the pinned dependencies and Chromium as described in [Build instructions](../BUILD-INSTRUCTIONS.md), then run `npm run test:ui`. Those checks use modeled Firefox APIs. [Testing](../docs/TESTING.md) explains the coverage and the remaining Firefox checks.
