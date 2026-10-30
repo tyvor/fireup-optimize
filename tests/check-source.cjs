@@ -26,6 +26,7 @@ const manifest = require('../extension/manifest.json');
 assert.equal(manifest.version, require('../package.json').version);
 require('../extension/policy.js');
 assert.equal(manifest.version, require('../extension/transfer.js').VERSION);
+assert(fs.readFileSync(path.join(root, 'extension/options.html'), 'utf8').includes(`>${manifest.version}</span>`), 'Settings page version differs from manifest');
 for (const name of [...manifest.background.scripts, manifest.browser_action.default_popup, ...Object.values(manifest.icons)]) {
   assert(fs.existsSync(path.join(root, 'extension', name)), `Missing manifest source: ${name}`);
 }
