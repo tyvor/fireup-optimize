@@ -1,3 +1,3 @@
-# Privacy notice
+# Privacy
 
-The current English privacy notice is maintained in [PRIVACY.md](../PRIVACY.md).
+The current notice is in [PRIVACY.md](../PRIVACY.md). This filename is kept for older links.

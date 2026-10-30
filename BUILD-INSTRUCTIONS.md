@@ -1,47 +1,55 @@
 # Build instructions
 
-The add-on is plain WebExtension source. No transpilation, bundling, minification, npm installation or compilation is needed. JavaScript is human-readable. The compact CSS is authored directly and has no separate generated input. The extension has no runtime package dependencies.
+FireUp runs from the files in `extension/`. There is no compiler, bundler or minifier, and the installed extension has no npm dependencies. The compact CSS is the source itself, not generated output.
 
-## Package
+## Make an XPI
 
-ZIP the CONTENTS of `extension/` with `manifest.json` at the archive root. Use `.xpi` as the filename extension. Only files under `extension/` belong in the add-on package; repository documentation, screenshots and tests do not.
-
-On Windows, run:
+On Windows, run this from the repository root:
 
 ```powershell
 powershell -NoProfile -File .\Build.ps1
 ```
 
-PowerShell 7 can also run `pwsh -NoProfile -File ./Build.ps1`. The script uses the standard .NET ZIP implementation and writes `dist/FireUp-<manifest version>-unsigned.xpi`. It performs no network operations. ZIP metadata and compression can differ between builds; compare uncompressed file contents rather than archive hashes.
+PowerShell 7 works too:
 
-Unsigned archives are for Mozilla submission or development. Regular Firefox requires Mozilla signing for permanent installation.
+```sh
+pwsh -NoProfile -File ./Build.ps1
+```
 
-## Tests
+The script puts `FireUp-<version>-unsigned.xpi` in `dist/`. It only ZIPs the source files and doesn't use the network.
 
-Node.js 22 or newer:
+You can make the same package with any ZIP tool. Archive the contents of `extension/`, so `manifest.json` is at the archive root, then use `.xpi` as the extension. Leave out the docs, tests and repository files.
+
+ZIP tools can produce different timestamps and compression. To compare two packages, compare their extracted files rather than their archive hashes. An unsigned XPI is for development or submission to Mozilla. See [Signing](SIGNING.md) for ordinary installation.
+
+## Run the checks
+
+The logic tests use Node's built-in test runner. With Node.js 22 or newer, run:
 
 ```sh
 npm test
 ```
 
-These engine, policy and localization tests use Node's built-in runner and mocked Firefox APIs. They require no installed npm dependencies.
-
-Optional UI tests use Playwright 1.62.1 with Chromium:
+UI tests and Mozilla validation need the development dependencies pinned in `package-lock.json`:
 
 ```sh
-npm install --no-save --package-lock=false playwright@1.62.1
+npm ci
 npx playwright install chromium
+npm run check:source
 npm run test:ui
+npm run lint:addon
 ```
 
-`FIREUP_BROWSER` can point to a Chromium executable. The script writes test output to `work/`, root `preview-*.png` and `ui-checks.json`; these are ignored by Git. This test does not run native Firefox APIs. See [docs/TESTING.md](docs/TESTING.md) for coverage and native checks.
+Set `FIREUP_BROWSER` if you want the UI tests to use an existing Chromium executable. The tests create their temporary directories and write previews and reports beside the source; those generated files are ignored by Git.
 
-## Language
+The UI checks use modeled Firefox APIs. [Testing](docs/TESTING.md) lists what still needs to be checked in Firefox, including the known first-opening popup issue.
 
-English and Russian interface strings are packaged in i18n.js. Native manifest messages live in _locales/en and _locales/ru. Browser-default language uses browser.i18n.getUILanguage(); a saved local preference can override it. Settings transfer format 2 includes that preference; format 1 from 0.3.0 migrates to auto.
+## Source layout
 
-## Reviewer architecture notes
+The background scripts load localization, policy rules, settings transfer, the engine, then browser event listeners. Firefox can suspend the background page; alarms wake it when work is due.
 
-Background scripts load in order: policy, settings transfer, engine, event listeners. The background page is nonpersistent. Alarms wake queued work. `storage.session` carries the pending queue and short-lived metadata between background-page lifetimes; it resets after the browser fully exits. `storage.local` holds settings and the install-grace deadline. `sessions.setTabValue` holds manual per-tab protections.
+`storage.local` holds settings and the first-install grace deadline. `storage.session` holds the queue and temporary activity records for the current browser run. Per-tab protection uses `sessions.setTabValue`. Queue entries and quick-return markers include tab URLs so FireUp can check whether a page changed.
 
-No remote code, content scripts, server component, analytics, or website requests are used by the extension. Optional JSON import uses strict schema validation and never evaluates input. Export includes settings and excluded domains, not open-tab URLs. Pending queues and quick-return markers do retain tab URLs locally during a browser session. See [PRIVACY.md](PRIVACY.md).
+The English and Russian strings are in `i18n.js`. Manifest translations are in `_locales/en` and `_locales/ru`. Settings exports use format 2; imports also accept format 1 from 0.3.0.
+
+No content scripts or website-content permissions are needed. JSON imports are checked as data and never evaluated as code. [PRIVACY.md](PRIVACY.md) covers local storage in more detail.

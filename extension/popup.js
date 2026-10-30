@@ -30,11 +30,19 @@ function footerStatus() {
   if (!state) return;
   const candidates = state.tabs.filter(t => t.canSleep && scoped(t));
   const q = state.queue;
-  $('sleep').textContent = q ? t('Queue: {processed} of {total}', q) : t('Unload tabs: {count}', { count: candidates.length });
+  const selectedScope = scope();
+  const label = selectedScope.type === 'window' ? t('Unload tabs in this window: {count}', { count: candidates.length })
+    : selectedScope.type === 'selected' ? t('Unload selected tabs: {count}', { count: candidates.length })
+    : selectedScope.type === 'site' ? t('Unload tabs from this site: {count}', { count: candidates.length })
+    : t('Unload tabs in all windows: {count}', { count: candidates.length });
+  $('sleep').textContent = q ? t('Queue: {processed} of {total}', q) : label;
   $('sleep').disabled = working || Boolean(q) || !candidates.length;
   $('cancel').hidden = !q; $('cancel').disabled = Boolean(q?.cancelled);
   $('pause').disabled = working;
-  $('scope-note').textContent = q ? t('Unloaded {slept}, skipped {skipped}, failed {failed}.', q) : t('Manual unloading includes recent tabs. Protected tabs stay loaded.');
+  const filtered = $('search').value.trim() || $('filter').value !== 'all';
+  $('scope-note').textContent = q ? t('Unloaded {slept}, skipped {skipped}, failed {failed}.', q)
+    : filtered ? t('Search and filters only change the list. Hidden tabs in the selected scope are included. Protected tabs stay loaded.')
+    : t('Manual unloading includes recent tabs. Protected tabs stay loaded.');
 }
 function row(tab) {
   const el = document.createElement('div'); el.className = 'tab-row'; el.dataset.id = tab.id;

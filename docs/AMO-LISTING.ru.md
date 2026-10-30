@@ -1,3 +1,3 @@
-# Mozilla listing
+# Mozilla listing text
 
-The public listing is now maintained in English in [AMO-LISTING.en.md](AMO-LISTING.en.md). This file preserves links to the earlier draft.
+The listing copy is in [AMO-LISTING.en.md](AMO-LISTING.en.md). This older filename is kept so existing links still work. FireUp's interface continues to support both English and Russian.

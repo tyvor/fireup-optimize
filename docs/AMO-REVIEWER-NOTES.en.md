@@ -1,27 +1,37 @@
 # Notes for Mozilla reviewers
 
-FireUp 0.4.0 is a desktop Firefox tab-unloading extension. No account, external service or payment is required. The UI supports English and Russian. The minimum Firefox version is 140.
+FireUp 0.4.1 unloads idle tabs in desktop Firefox 140 or newer. It works without an account, payment or external service. The interface supports English and Russian.
 
-The XPI contains plain source with no compilation, bundling, obfuscation or runtime dependencies. See BUILD-INSTRUCTIONS.md for packaging. Permissions are tabs, storage, alarms, menus and sessions. FireUp does not inject content scripts or read page contents. Tab metadata and queued candidate URLs are processed locally. No telemetry or tab information is transmitted to the developer; required data-collection permissions are ["none"]. See PRIVACY.md and docs/PERMISSIONS.md.
+This update fixes two protection races: a delayed read could hide a newer protection, and an old expiry operation could remove a renewal. Eleven regression checks cover these cases and related failures. The same test file fails nine checks on 0.4.0 and passes all eleven on 0.4.1.
 
-## Functional checks
+## Source and packaging
 
-Use expendable tabs in a test profile. Open the toolbar popup, then Settings. Set the recent working set to 1 and the idle timer to 1 minute and save. The first-install grace period is based on preferences at installation (10 minutes by default); changing the timer does not shorten that original deadline. Manual unloading is available during the grace period.
+The XPI contains readable JavaScript, HTML and CSS. There is no compilation, bundling, minification, obfuscation or runtime npm dependency. [Build instructions](../BUILD-INSTRUCTIONS.md) explain how to ZIP the contents of `extension/` with `manifest.json` at the archive root. Packaging doesn't change file contents.
 
-The primary Unload tabs action defaults to the current window. The scope selector also supports all windows, selected tabs and a site. Manual unloading ignores recent working-set protection and automatic deadlines but still skips active, pinned, audible, capture-active, protected and excluded tabs. Stop cancels between candidate operations.
+The permissions are `tabs`, `storage`, `alarms`, `menus` and `sessions`. FireUp has no content scripts or website-content host permissions. Tab metadata and queued URLs are handled locally; the manifest declares required data collection as `["none"]`. See [Privacy](../PRIVACY.md) and [Permissions](PERMISSIONS.md).
 
-Use Protect beside a tab or its context menu for 30-minute, one-hour or permanent protection. Domain exclusions include subdomains. Private tabs are excluded. Camera, microphone and screen-sharing protection depends on Firefox's reported state. Unsaved forms, editors and silent playback cannot all be detected; the listing and UI tell users to protect these manually.
+## A short test
 
-Returning within two minutes of a confirmed FireUp unload delays the next automatic sleep. With a 10-minute timer, successive quick returns produce 20, 40, 80 and 120-minute delays. This feature can be disabled in settings.
+Use disposable pages in a separate Firefox profile. Open several tabs, leave one active and protect one background tab. Run a manual unload from the toolbar panel: the active and protected tabs should stay loaded. Return to an unloaded tab to reload it.
 
-## Language and settings transfer
+The panel defaults to the current window. Other scopes are all windows, checked tabs and a site. Search and filters only change the list, and the panel explains that hidden tabs in the selected scope are still included. Manual unloading bypasses recent-tab and idle delays but keeps the protection rules. Stop cancels the remaining queue.
 
-Settings → Language offers Browser default, English and Russian. Browser default uses i18n.getUILanguage(), selecting Russian for ru locales and English otherwise. English is the fallback. A saved manual choice updates the panel, settings, context menu and command description. Native manifest messages use packaged _locales/en and _locales/ru catalogs. All translations are local; no translation service is used.
+For automatic unloading, set the working set to 1 and the idle timer to 1 minute. There is a first-install grace period based on the settings at installation, normally 10 minutes. Reducing the timer afterward doesn't shorten that initial grace period. Manual unloading works during it.
 
-Export produces local JSON with applied preferences, language and excluded domains. New files use format 2. Format 1 from 0.3.0 is accepted and normalized to language auto; it cannot inject a language field into the old schema. Import selection is read-only preview. Apply import revalidates and replaces settings; Cancel leaves preferences unchanged. No open-tab URLs or per-tab protections are exported.
+Check 30-minute, one-hour and permanent protection from the panel or tab context menu. Site exclusions also cover subdomains. Private, active, pinned, audible and loading tabs are excluded, as are browser-reported calls and screen sharing. Unsaved input and silent playback need manual protection because FireUp doesn't read page contents.
 
-The background page is nonpersistent. Alarms resume the queue; storage.session retains it only for the current browser run. Per-tab protection uses Firefox's sessions API. Pausing automatic sleep removes its periodic alarm rather than scanning tabs while paused.
+If a tab is reopened within two minutes of a confirmed FireUp unload, the next automatic sleep is delayed. With a 10-minute base timer, repeated quick returns give 20, 40, 80 and 120-minute delays. This setting can be disabled.
 
-## Validation evidence
+## Language, settings and background work
 
-50 Node policy, engine and localization checks and 20 Chromium UI scenarios with mocked Firefox APIs passed. The author reported successful use and memory release for the preceding 0.3.0 behavior in real Firefox. Native Firefox version details and a full scenario log were not supplied; the 0.4.0 localization changes have not been independently verified in native Firefox here. Mocked tests do not establish native compatibility or measured memory savings.
+Settings → Language offers Browser default, English and Russian. The default uses Firefox's UI language: Russian for Russian locales, English otherwise. A saved override also updates context menus and the command description. All translations are packaged locally.
+
+Exported JSON contains preferences, language and excluded domains. It doesn't include open tabs or per-tab protection. Importing a file first shows a read-only preview. Apply replaces settings after another validation pass; Cancel leaves the current settings alone. Format 2 is current; format 1 from 0.3.0 imports with Browser default language.
+
+Firefox may suspend the background page. Alarms resume work and `storage.session` holds the queue for the current browser run. Per-tab protection uses the sessions API. Pausing automatic sleep removes the periodic alarm.
+
+## Checks and known limits
+
+61 Node tests and 21 Chromium UI scenarios pass. The UI checks use modeled Firefox APIs. A basic manual Firefox check passed, but exact browser version details and a complete native test log aren't recorded. The first-opening narrow-popup report remains open, and there are no measured RAM or CPU results. [Testing](TESTING.md) lists the remaining checks.
+
+Mozilla lint reports no errors or notices. The local wrapper allows one Android-only minimum-version warning because this is a desktop-only release. Android must remain unselected in AMO.

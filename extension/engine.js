@@ -10,7 +10,7 @@
     let config = P.settings(), graceUntil = 0;
     let data = { meta: {}, protections: {}, known: {}, queue: null, lastRun: null };
     let writing = Promise.resolve(), settingsTail = Promise.resolve();
-    const locks = new Map(), pendingProtections = new Set();
+    const locks = new Map(), pendingProtections = new Set(), protectionEpochs = new Map();
     let ticking = false, starting = false, flushTimer, badgeTimer;
     const ready = Promise.all([browser.storage.local.get(['settings', 'firstRunUntil']), browser.storage.session.get('state')]).then(([local, session]) => {
       config = P.settings(local.settings);
@@ -50,9 +50,18 @@
     }
     async function getProtection(tab) {
       if (tab.incognito) return null;
+      if (pendingProtections.has(tab.id)) return { mode: 'unknown' };
       if (!Object.hasOwn(data.protections, tab.id)) {
-        try { data.protections[tab.id] = P.protection(await browser.sessions.getTabValue(tab.id, KEY), now()); }
+        if (!protectionEpochs.has(tab.id)) protectionEpochs.set(tab.id, Symbol());
+        const epoch = protectionEpochs.get(tab.id);
+        try {
+          const stored = await browser.sessions.getTabValue(tab.id, KEY);
+          if (protectionEpochs.get(tab.id) === epoch && !Object.hasOwn(data.protections, tab.id)) {
+            data.protections[tab.id] = P.protection(stored, now());
+          }
+        }
         catch { return { mode: 'unknown' }; }
+        if (pendingProtections.has(tab.id) || !Object.hasOwn(data.protections, tab.id)) return { mode: 'unknown' };
       }
       const value = P.protection(data.protections[tab.id], now());
       if (!value && data.protections[tab.id]) { delete data.protections[tab.id]; return getProtection(tab); }
@@ -196,20 +205,27 @@
       if (!ticking) await tick();
       changed();
     }
+    function protectionChange(id, fn) {
+      protectionEpochs.set(id, Symbol());
+      pendingProtections.add(id);
+      return serial(id, fn).finally(() => { if (!locks.has(id)) pendingProtections.delete(id); });
+    }
+    async function writeProtection(id, value) {
+      const tab = await browser.tabs.get(id);
+      if (tab.incognito) throw new Error('Private tabs are not processed.');
+      meta(id).revision++;
+      await browser.sessions.setTabValue(id, KEY, value || false);
+      data.protections[id] = value;
+      await persist(); await expiryAlarm(); changed();
+      return value;
+    }
     function setProtection(id, mode) {
       if (!Number.isInteger(id) || !['none', 'permanent', '30', '60'].includes(mode)) return Promise.reject(new Error('Invalid protection mode.'));
-      pendingProtections.add(id);
-      return serial(id, async () => {
+      return protectionChange(id, async () => {
         await ready;
-        const tab = await browser.tabs.get(id);
-        if (tab.incognito) throw new Error('Private tabs are not processed.');
-        meta(id).revision++;
         const value = mode === 'none' ? null : mode === 'permanent' ? { mode: 'permanent', until: 0 } : { mode: 'timed', until: now() + Number(mode) * 60000 };
-        await browser.sessions.setTabValue(id, KEY, value || false);
-        data.protections[id] = value;
-        await persist(); await expiryAlarm(); changed();
-        return value;
-      }).finally(() => { if (!locks.has(id)) pendingProtections.delete(id); });
+        return writeProtection(id, value);
+      });
     }
     function saveSettings(value) {
       const task = settingsTail.catch(() => {}).then(async () => {
@@ -239,7 +255,13 @@
     async function expire() {
       await ready;
       for (const [id, value] of Object.entries(data.protections)) {
-        if (value?.mode === 'timed' && value.until <= now()) await setProtection(Number(id), 'none').catch(() => { delete data.protections[id]; });
+        if (value?.mode === 'timed' && value.until <= now()) {
+          await protectionChange(Number(id), async () => {
+            const current = data.protections[id];
+            if (current?.mode !== 'timed' || current.until !== value.until || current.until > now()) return;
+            await writeProtection(Number(id), null);
+          }).catch(report);
+        }
       }
       await persist(); await expiryAlarm(); changed();
     }
@@ -279,7 +301,7 @@
       await badge();
     }
     async function removed(id) {
-      await ready; delete data.meta[id]; delete data.protections[id]; delete data.known[id];
+      await ready; delete data.meta[id]; delete data.protections[id]; delete data.known[id]; protectionEpochs.delete(id);
       scheduleFlush(); scheduleBadge();
     }
     async function alarm(name) {
