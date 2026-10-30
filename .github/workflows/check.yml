@@ -16,7 +16,12 @@ jobs:
         with:
           node-version: 22
           package-manager-cache: false
+      - run: npm ci
+      - run: npm run check:source
       - run: npm test
+      - run: npx playwright install chromium
+      - run: npm run test:ui
+      - run: npm run lint:addon
       - name: Package unsigned add-on
         shell: pwsh
         run: ./Build.ps1
