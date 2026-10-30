@@ -10,10 +10,12 @@ Run the checks described in [Testing](TESTING.md). The workflow runs them on pus
 
 ## Mozilla
 
-1. Run `Build.ps1` and find `dist/FireUp-0.4.1-unsigned.xpi`.
+Mozilla submission is deferred until the current work and native checks are finished. When it is ready:
+
+1. Run `Build.ps1` and find `dist/FireUp-0.4.2-unsigned.xpi`.
 2. Open FireUp in [Developer Hub](https://addons.mozilla.org/developers/) and upload a new version to the existing add-on. Keep `fireup@local.extension` as its ID.
 3. Read the validation results. This release targets desktop Firefox 140 or newer; leave Android unselected. The local lint wrapper documents one Android-only warning.
-4. If Mozilla asks for a source archive, provide `FireUp-0.4.1-reviewer-source.zip` from the prepared bundle, including the [build instructions](../BUILD-INSTRUCTIONS.md). A GitHub URL doesn't replace a requested upload.
+4. If Mozilla asks for a source archive, provide `FireUp-0.4.2-reviewer-source.zip` from the prepared bundle, including the [build instructions](../BUILD-INSTRUCTIONS.md). A GitHub URL doesn't replace a requested upload.
 5. Update the form using [listing text](AMO-LISTING.en.md), [reviewer notes](AMO-REVIEWER-NOTES.en.md) and the [privacy notice](../PRIVACY.md). Use MIT as the license. Check the author details before submitting.
 6. After the signed update becomes available, test an ordinary installation from the listing.
 

@@ -1,8 +1,8 @@
 # Notes for Mozilla reviewers
 
-FireUp 0.4.1 unloads idle tabs in desktop Firefox 140 or newer. It works without an account, payment or external service. The interface supports English and Russian.
+FireUp 0.4.2 unloads idle tabs in desktop Firefox 140 or newer. It works without an account, payment or external service. The interface supports English and Russian. These notes are prepared for a future submission; Mozilla publication is currently deferred.
 
-This update fixes two protection races: a delayed read could hide a newer protection, and an old expiry operation could remove a renewal. Eleven regression checks cover these cases and related failures. The same test file fails nine checks on 0.4.0 and passes all eleven on 0.4.1.
+This version maintains the recent working set from tab events, reduces queue checkpoint copies and adds a minimum popup width. It also includes the two protection-race fixes from 0.4.1. Candidate safety checks still run before each unload; no new permissions were added.
 
 ## Source and packaging
 
@@ -32,6 +32,6 @@ Firefox may suspend the background page. Alarms resume work and `storage.session
 
 ## Checks and known limits
 
-61 Node tests and 21 Chromium UI scenarios pass. The UI checks use modeled Firefox APIs. A basic manual Firefox check passed, but exact browser version details and a complete native test log aren't recorded. The first-opening narrow-popup report remains open, and there are no measured RAM or CPU results. [Testing](TESTING.md) lists the remaining checks.
+79 Node tests, 21 general/language UI scenarios and four startup language/theme combinations pass. The UI checks use Chromium with modeled Firefox APIs. Basic manual testing passed for 0.4.1; native confirmation of the 0.4.2 changes is still pending. The first-opening narrow-popup fix remains a candidate, and no real Firefox RAM or CPU improvement is claimed. [Testing](TESTING.md) and [Performance](PERFORMANCE.md) give the details.
 
 Mozilla lint reports no errors or notices. The local wrapper allows one Android-only minimum-version warning because this is a desktop-only release. Android must remain unselected in AMO.

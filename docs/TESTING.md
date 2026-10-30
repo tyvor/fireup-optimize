@@ -1,12 +1,14 @@
-# Testing FireUp 0.4.1
+# Testing FireUp 0.4.2
 
-## What passes
+## Automated checks
 
-61 Node tests cover policy rules, the engine, localization and protection. The 11 new protection tests control the order of asynchronous operations: stale reads, explicit removal, expiry during permanent or timed renewal, pending writes, failed writes and tab closure. The same file passes 2 tests and fails 9 on 0.4.0; all 11 pass on 0.4.1.
+The Node tests cover policy, protection, queue recovery, settings transfer and language behavior. New queue checks use 100, 500 and 1000 tabs, including working-set changes during a batch, stale list queries, delayed activity, tab closure and checkpoint failures. A seeded sequence compares the incremental index with the original policy across 4000 changes.
 
-15 general UI scenarios and 6 language scenarios pass with Playwright 1.62.1 and Chromium. They cover scopes, the search warning, protection, cancellation, focus, themes, error recovery and settings transfer. They also check browser language selection, saved overrides and translated errors. Firefox APIs are modeled in these tests.
+The 11 protection regressions from 0.4.1 remain. The same file passed 2 tests and failed 9 against 0.4.0; all 11 passed after the protection fixes.
 
-The source check parses JavaScript and JSON, checks version consistency and follows local Markdown links. Mozilla lint uses web-ext 10.8.0. It reports no errors or notices. The wrapper allows exactly one Android-only minimum-version warning when there is no `gecko_android` entry; any other warning fails. Android must stay unselected in AMO.
+Playwright 1.62.1 runs 15 general UI scenarios and 6 language scenarios in Chromium with modeled Firefox APIs. The startup test adds four language/theme combinations with an intentionally unresolved settings response. At a 16-pixel viewport, the popup body stays at 320 pixels; at 320, 400 and 800 pixels, it fits its intended width. Reloads keep the same bounds. This checks CSS and page startup, not Firefox's popup-sizing algorithm.
+
+The source check parses JavaScript and JSON, checks versions and follows local Markdown links. Mozilla lint uses web-ext 10.8.0. It allows one Android-only minimum-version warning when there is no gecko_android entry; all other warnings, errors and notices fail. Android must stay unselected in AMO.
 
 ## Run it yourself
 
@@ -19,26 +21,25 @@ npm test
 npx playwright install chromium
 npm run test:ui
 npm run lint:addon
+npm run benchmark
 ```
 
-For just the new protection checks, run `node --test tests/protection.test.cjs`. They need no installed npm dependencies. The prepared local bundle also contains the before/after output and matching test-file hashes under `checks/`.
+The Node tests need no installed npm dependencies. The benchmark writes its model results to checks/queue-benchmark.json; see [Performance](PERFORMANCE.md) for a comparison command and measurement limits.
 
-The GitHub workflow runs these checks and packages an unsigned XPI on Windows. Its actual results are on the [Actions page](https://github.com/tyvor/fireup-optimize/actions). It doesn't sign or publish releases.
+The [GitHub workflow](https://github.com/tyvor/fireup-optimize/actions) runs the checks and packages an unsigned XPI on Windows. It does not sign or submit the add-on. Benchmarks run locally rather than serving as timing thresholds in CI.
 
-## What still needs checking in Firefox
+## Native Firefox checks
 
-A basic manual check of the temporary 0.4.1 copy passed for protection, manual unloading and the scope explanation. The exact Firefox and OS versions and a full scenario log weren't recorded. Automated checks against native Firefox APIs haven't been completed. There are no RAM or CPU measurements.
+A basic manual check passed for 0.4.1. That result does not establish native behavior for the 0.4.2 changes. The exact Firefox and OS versions and a complete scenario log still need recording. There are no measured Firefox RAM or CPU results.
 
-The narrow strip reported on the first popup opening is still open. An ordinary successful opening doesn't establish that cold startup and background wake-up work reliably.
+Use disposable pages in a separate profile:
 
-Use disposable pages in a separate profile for the remaining checks:
-
-- Open the panel after starting Firefox and after the background page has been idle. Repeat with both languages, both themes, display scaling and a narrow browser window.
-- Try automatic unloading outside the recent working set, every manual scope and queue cancellation.
+- Open the panel on the first click after starting Firefox, after the background page has been idle, and after reopening. Try both languages, both themes, display scaling and a narrow browser window. Record at least ten cold openings separately from warm openings.
+- During an automatic queue, switch tabs, close recent tabs, create a tab and restore an unloaded tab. Newly recent tabs must stay loaded.
+- Check queue recovery after the background page sleeps, all manual scopes and cancellation.
 - Check active tabs in two windows, pinned tabs, audio, loading pages, calls and screen sharing.
-- Renew timed protection near expiry, switch it to permanent, and check restoration after restarting Firefox.
-- Check private tabs, background-page suspension and queue resumption.
-- Use disposable unsaved forms with and without `beforeunload`. Protect them before unloading; preservation without protection isn't promised.
-- Check import preview and cancellation, export, pause, language changes and keyboard navigation.
+- Renew protection near expiry, switch to permanent, and restore protected tabs after restarting Firefox.
+- Check private tabs, import preview and cancellation, export, pause, language changes and keyboard focus.
+- Protect disposable unsaved forms before unloading. Preservation of unprotected input is not promised.
 
-Run the matrix on minimum-declared Firefox 140 and a current supported version. Record the versions and what happened. For a narrow-popup failure, also record `innerWidth`, body bounds, computed width limits and console errors.
+Run this on minimum-declared Firefox 140 and a current supported version. If the popup narrows, inspect its document and record innerWidth, body bounds, computed width/min-width/max-width, and console errors. Check whether the toolbar button is in an overflow menu. [MDN describes Firefox's popup sizing](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/user_interface/Popups#popup_resizing); a normal browser page does not reproduce that process.
