@@ -1,17 +1,19 @@
 # Contributing
 
-Use [GitHub Issues](https://github.com/tyvor/fireup-optimize/issues) for bugs and suggestions. Choose **Bug report** or **Feature request**. English and Russian reports are welcome.
+Found a bug or have an idea? [Open an issue](https://github.com/tyvor/fireup-optimize/issues). Reports in English or Russian are welcome.
 
-For a bug, include FireUp, Firefox and OS versions, exact steps, expected and actual behavior. For unloading problems, include the tab count, working-set size, timer and protection state. Mention a domain only if you can disclose it publicly.
+For a bug, include your FireUp, Firefox and OS versions, what you did, what you expected and what happened. If it's about unloading, also include the approximate tab count, working-set size, timer and protection settings. A short reproducible example is more useful than a large browser dump.
 
-Issues and attachments are public. Do not upload Firefox profiles, cookies, tokens, browsing history or account data. Remove private domains from settings exports and redact tab titles and URLs in screenshots.
+Issues and attachments are public. Redact private URLs, tab titles and domains. Please don't upload a Firefox profile, cookies, tokens or browsing history. Settings exports can contain private domain names too.
 
 ## Code changes
 
-For a large change, describe the problem in an issue first. Small fixes can be submitted as pull requests. Explain the behavior change and how you verified it. Preserve local data processing, minimal permissions and explicit protection for important tabs.
+Small fixes can go straight into a pull request. For a larger change, open an issue first so the problem and approach can be discussed before you spend time on it.
 
-Run `npm test` for policy, engine and localization checks. `npm run test:ui` runs UI checks with Chromium and mocked APIs after installing Playwright. Changes involving browser APIs also need testing in real Firefox. See [BUILD-INSTRUCTIONS.md](BUILD-INSTRUCTIONS.md).
+Explain what behavior changes and how you checked it. Run `npm test`; if the change affects the interface, also run `npm run test:ui`. Changes to browser API behavior need a check in real Firefox as well. [Build instructions](BUILD-INSTRUCTIONS.md) cover setup, and [Testing](docs/TESTING.md) lists the checks.
 
-Do not commit personal exports, browser profiles, logs or generated packages from `dist/`. New interface text needs English and Russian translations. Keep English as the fallback and test both browser-default and manual language selection.
+Keep processing local and permissions limited to what the feature needs. Take particular care with tab protection: a successful protection command must not be undone by a stale read or an old expiry timer.
 
-Contributions use the project's [MIT license](LICENSE).
+New interface text needs English and Russian translations. English stays the fallback. Check browser-default language selection and the saved override.
+
+Leave browser profiles, personal exports, logs and generated packages out of commits. Contributions use the project's [MIT license](LICENSE).

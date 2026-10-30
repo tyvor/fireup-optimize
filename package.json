@@ -1,13 +1,19 @@
 {
   "name": "fireup",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "private": true,
   "license": "MIT",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
-    "test": "node --test tests/engine.test.cjs tests/features.test.cjs tests/i18n.test.cjs",
-    "test:ui": "node tests/ui.test.cjs && node tests/i18n-ui.test.cjs"
+    "test": "node --test tests/engine.test.cjs tests/features.test.cjs tests/i18n.test.cjs tests/protection.test.cjs",
+    "test:ui": "node tests/ui.test.cjs && node tests/i18n-ui.test.cjs",
+    "check:source": "node tests/check-source.cjs",
+    "lint:addon": "node tests/lint-addon.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1",
+    "web-ext": "10.8.0"
   }
 }

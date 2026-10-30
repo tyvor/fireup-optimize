@@ -1,77 +1,73 @@
 # FireUp
 
-FireUp unloads idle Firefox tabs to reduce their memory use. Tabs stay in your browser and reload when you return to them.
+If you keep a lot of Firefox tabs open but only use a few of them, FireUp can unload the ones sitting in the background. They stay in the tab bar and reload when you return to them.
 
-By default, FireUp keeps your 10 most recently used tabs loaded and lets other tabs sleep after 10 minutes of inactivity. Both settings are adjustable. Requires desktop Firefox 140 or later. Android support has not been verified.
+[Install from Firefox Add-ons](https://addons.mozilla.org/firefox/addon/fireup-optimize/) · [Report a bug](https://github.com/tyvor/fireup-optimize/issues)
 
-![FireUp tab panel in the light theme](docs/images/popup-light.png)
+FireUp is for desktop Firefox 140 or newer. The source on GitHub may be ahead of the version available on Mozilla.
 
-Screenshots use demonstration tabs. They show the interface, not measured memory savings.
+![The FireUp tab panel in the light theme](docs/images/popup-light.png)
 
-## Protect important tabs first
+The screenshot uses demonstration tabs.
 
-Protect tabs containing unsaved text, editors or silent playback before unloading. Use **Protect**, the tab context menu, or a site exclusion in settings. FireUp does not read page contents and cannot detect every unsaved form or playback state. Unloading a page may lose unsaved data.
+## How it works
 
-Active tabs in each window, pinned tabs, audible tabs and browser-reported camera, microphone or screen sharing are skipped. Private tabs and pages outside HTTP/HTTPS are excluded. The first installation includes a grace period to set up protections.
+By default, your 10 most recently used tabs stay loaded. Other tabs can sleep after 10 minutes of inactivity. You can change both values in settings. Protection can keep more than 10 tabs loaded.
 
-## Features
+Active tabs in each window, pinned tabs and tabs playing audio stay loaded. FireUp also skips calls and screen sharing when Firefox reports them. Private tabs and internal pages such as `about:settings` are excluded.
 
-- Automatic unloading with a recent working set and idle timer.
-- Manual unloading for the current window, all windows, selected tabs or a site. Preview the candidate count and stop a running queue.
-- Per-tab protection for 30 minutes, one hour or until removed. Domain exclusions also protect subdomains.
-- Longer automatic sleep delays after a quick return to a tab unloaded by FireUp.
-- Search, filters, light, dark and system themes.
-- Local settings export and import with validation and a preview before replacing settings.
-- English and Russian interfaces, initially selected from the Firefox interface language.
+Use **Protect** for tabs you want to keep loaded. Protection can last 30 minutes, an hour, or until you remove it. You can also exclude a site in settings; a domain rule covers its subdomains too. There's a grace period on first installation so you can set this up before automatic unloading starts.
 
-Manual unloading ignores the working set and automatic delays while respecting tab protections and site exclusions. **Alt+Shift+U** applies to all windows; the popup defaults to the current window. Pausing automatic sleep leaves manual unloading available.
+Protect editors, forms with unsaved text and silent playback yourself. FireUp doesn't read page contents, so it can't reliably recognize all of these. Unloading a page can lose unsaved work.
 
-## Language
+## Using the panel
 
-Open **Settings → Language** and choose **Browser default**, **English** or **Русский**. Browser default uses Firefox's interface language: Russian selects Russian; other unsupported languages fall back to English. A manual choice is saved locally and also applies to the tab context menu and shortcut description. Save settings to persist your choice.
+The panel lets you search and filter the list, protect tabs and unload them manually. Choose the current window, all windows, checked tabs or a site. The button shows which scope you're using and how many tabs are eligible. **Stop** cancels the rest of a running queue.
 
-Settings exports include the language preference. Version 0.4.0 writes format 2 and also accepts format 1 exports from 0.3.0; importing a legacy file restores Browser default. Version 0.3.0 cannot import format 2.
+Search and filters only change what you see in the list. Hidden tabs in the chosen scope are still included in an unload command. Choose **Selected tabs** to act only on checked rows.
 
-## Installation
+A manual command can unload recent tabs and skips automatic waiting periods. It still respects protection and site exclusions. **Alt+Shift+U** runs that command across all windows. Pausing automatic sleep leaves manual commands available.
 
-A public Mozilla listing is not available yet. Unsigned XPI files are intended for Mozilla submission or development; regular Firefox requires Mozilla signing for permanent installation.
+If you return to a tab within two minutes of FireUp unloading it, its next automatic sleep is delayed. Repeated quick returns increase that delay, up to two hours. You can turn this off in settings.
 
-For development, open `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on**, then select `extension/manifest.json`. Temporary installations last until Firefox restarts. See [BUILD-INSTRUCTIONS.md](BUILD-INSTRUCTIONS.md) for packaging and [docs/PUBLISHING.md](docs/PUBLISHING.md) for release preparation.
+## Settings and language
 
-## Data and permissions
+Choose a light, dark or system theme. The interface starts in Russian if Firefox uses Russian, and English otherwise. **Settings → Language** lets you override that choice. Save the setting to keep it for the panel, settings page and tab context menu.
 
-FireUp processes tab metadata locally: URLs, titles, state and access times support its list, exclusions and unloading rules. It does not transmit this information to its developer. It has no analytics, advertising or server component and does not read page contents or form text.
+You can export settings to a local JSON file and review an import before applying it. The file includes preferences, language and excluded domains. It doesn't include open tabs or per-tab protection. Exports from 0.3.0 still import; they reset the language to **Browser default**. Newer exports use format 2, which 0.3.0 can't read.
 
-Preferences and excluded domains stay in the Firefox profile. Temporary activity records and pending candidate URLs stay in session storage until the browser fully exits. Per-tab protections use Firefox's sessions API and may be restored with a tab. Exported settings include excluded domains, not open-tab URLs or per-tab protections.
+## Privacy
 
-Read [PRIVACY.md](PRIVACY.md) and the [permission explanations](docs/PERMISSIONS.md).
+FireUp uses tab titles, URLs and browser-reported states to show the list and decide what can sleep. That information stays in your Firefox profile. The extension has no analytics, advertising, remote code or server component.
 
-## Bugs and suggestions
-
-Use [GitHub Issues](https://github.com/tyvor/fireup-optimize/issues). Bug reports ask for Firefox, FireUp and OS versions, reproduction steps, expected and actual behavior. A separate form is available for feature requests. Reports may be written in English or Russian.
-
-Issues and attachments are public. Do not post Firefox profiles, cookies, tokens, browsing history or private URLs. Redact screenshots and remove private domains from settings exports before sharing. See [CONTRIBUTING.md](CONTRIBUTING.md).
+Settings survive browser restarts. Temporary activity records and queued tab URLs last for the current browser session. Firefox may restore a tab's protection when it restores that tab. The [privacy notice](PRIVACY.md) explains what is stored, and [Permissions](docs/PERMISSIONS.md) explains each permission.
 
 ## Development
 
-Runtime sources are in `extension/`. There is no JavaScript build step or runtime npm dependency. Use Node.js 22 or later for the policy, engine and localization tests:
+To try the source, open `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on** and select `extension/manifest.json`. Firefox removes temporary add-ons when it restarts.
+
+The extension runs directly from `extension/`; there's no JavaScript build step. The logic tests need Node.js 22 or newer:
 
 ```sh
 npm test
 ```
 
-Optional UI checks use Playwright with Chromium and mocked Firefox APIs:
+For the rest of the checks:
 
 ```sh
-npm install --no-save --package-lock=false playwright@1.62.1
+npm ci
 npx playwright install chromium
+npm run check:source
 npm run test:ui
+npm run lint:addon
 ```
 
-These checks do not replace testing native Firefox APIs. See [docs/TESTING.md](docs/TESTING.md) for coverage and limitations.
+The UI tests use Chromium with modeled Firefox APIs. They help catch interface regressions but don't replace testing in Firefox. See [Testing](docs/TESTING.md), [Build instructions](BUILD-INSTRUCTIONS.md) and [Release status](docs/RELEASE-STATUS.md).
 
-## Limits and license
+## Bugs and contributions
 
-FireUp uses `tabs.discard`; it does not close tabs or terminate processes. Memory savings depend on the pages and Firefox. No fixed number of megabytes or percentage reduction is promised. Firefox can decline an unload request, and displayed sleep deadlines are approximate.
+[Open an issue](https://github.com/tyvor/fireup-optimize/issues) with your FireUp, Firefox and OS versions and the steps that reproduce the problem. English and Russian reports are welcome. Please redact private tab titles, URLs and domains before attaching files or screenshots. [Contributing](CONTRIBUTING.md) has details for code changes.
 
-Source code is available under the [MIT license](LICENSE).
+Memory savings depend on the pages and Firefox. FireUp uses Firefox's tab-unloading API; it doesn't close tabs or kill processes. Firefox can decline an unload request, and the sleep times shown in the panel are approximate.
+
+FireUp is open source under the [MIT license](LICENSE).

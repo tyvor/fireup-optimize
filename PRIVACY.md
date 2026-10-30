@@ -1,33 +1,37 @@
-# Privacy: FireUp 0.4.0
+# Privacy
 
-Updated October 24, 2026. This notice covers FireUp itself, not Firefox as a whole or the websites you visit.
+Updated October 30, 2026, for FireUp 0.4.1. This update fixes tab protection and doesn't change the data FireUp uses or its permissions.
 
-## Local processing
+FireUp handles tab information inside your Firefox profile. It doesn't send that information to the developer or a third party, and it has no analytics, advertising, remote code or server component.
 
-FireUp processes tab URLs, titles, last access times, window IDs and browser-reported loading, pinned, audible, discarded, camera, microphone and screen-sharing states. This information supports the tab list, exclusions and unloading decisions. Only supported browser-provided local favicon data is displayed; FireUp does not fetch favicons from websites.
+## What FireUp can see
 
-The extension does not read page contents, form text, passwords or cookies. It has no content scripts, website-content host permissions or browsing-history API permission. Private tabs are excluded from processing.
+FireUp uses open-tab titles, URLs, last access times and window IDs. It also reads the states Firefox reports for loading, pinned, audible and unloaded tabs, and for camera, microphone and screen-sharing activity. These let it display the tab list, apply site exclusions and decide which tabs can sleep.
 
-## Storage
+It displays only supported favicon data already supplied by Firefox. It doesn't fetch icons from websites.
 
-- Local extension storage holds preferences, excluded domains and the end of the first-install grace period. Preferences include the language choice. FireUp does not use sync storage.
-- Session storage holds per-open-tab activity, cached protections, the last queue result and the pending queue until the browser fully exits. The queue includes candidate URLs to detect navigation before unloading. Quick-return protection also keeps one marker per tab for its own discard, including the URL. Closed-tab records are removed; some expired records are pruned when the list is next read. FireUp does not build a browsing-history log.
-- Per-tab protection is stored through Firefox's sessions API and may be restored with the tab. Users can remove it in the panel or tab context menu. Timed protection stops applying after its deadline.
+FireUp doesn't read page contents, form text, passwords or cookies. It has no content scripts, website-content host permissions or browsing-history permission. Private tabs are excluded from processing.
 
-Browser-default language uses Firefox's interface language through the i18n API. No language information is sent to a server.
+## What it stores
 
-## Transmission
+Preferences, excluded domains, language choice and the first-install grace deadline go in local extension storage. FireUp doesn't use Firefox sync storage.
 
-FireUp does not transmit tab information, preferences or diagnostics to its developer or third parties. It contains no analytics, advertising, remote code or server component. Its extension policy includes `connect-src 'none'`.
+Temporary activity records, cached protections, the pending queue and the last queue result go in session storage. Queue entries include URLs to detect a page change before unloading. A quick-return marker also keeps the URL of the tab FireUp unloaded. These records last for the current browser run. Records for closed tabs are removed, and some expired records are cleaned up when the list is next read. FireUp doesn't keep a browsing-history log.
 
-Firefox makes its own connections to Mozilla for add-on services and updates. Revisiting a discarded tab reloads that website through Firefox; this is not a transmission to the FireUp developer.
+Per-tab protection uses Firefox's sessions API and may come back when Firefox restores a tab. You can remove protection from the panel or the tab context menu. Timed protection stops applying at its deadline.
 
-## Export and support
+The initial language comes from Firefox's interface language. FireUp doesn't contact a translation service.
 
-Settings export creates a local JSON file containing preferences and excluded domains, not open-tab URLs, queues or per-tab protections. Users choose where to store the file and whether to share it.
+## Connections
 
-GitHub receives information only when users submit it themselves. [Issues](https://github.com/tyvor/fireup-optimize/issues) and attachments are public. Remove private domains, URLs, names and account information before posting. Data-handling questions can be filed without personal information.
+The extension's content security policy includes `connect-src 'none'`. FireUp doesn't transmit tab information, preferences or diagnostics.
 
-## Unsaved input
+Firefox still makes its own connections, including add-on updates from Mozilla. When you return to an unloaded tab, Firefox reloads that website. Those connections are separate from FireUp's local processing.
 
-FireUp cannot detect every unsaved form, editor or silent playback state. Protect important tabs or domains manually before unloading. It does not guarantee preservation of unsaved page state.
+## Exports and support
+
+A settings export is a local JSON file with your preferences and excluded domains. It doesn't contain open-tab URLs, queues or per-tab protections. You choose where to save it and whether to share it.
+
+[GitHub Issues](https://github.com/tyvor/fireup-optimize/issues) and attachments are public. Remove private domains, URLs, names and account information before posting. You can ask a data-handling question without including personal information.
+
+Because FireUp doesn't read page contents, it can't reliably detect all unsaved forms, editors or silent playback. Protect those tabs or sites before unloading; unsaved page state may otherwise be lost.
