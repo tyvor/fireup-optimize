@@ -12,8 +12,7 @@ function scope() {
   if (value.startsWith('site:')) return { type: 'site', host: value.slice(5) };
   return { type: 'all' };
 }
-function scoped(tab) {
-  const value = scope();
+function scoped(tab, value) {
   return value.type === 'all' || (value.type === 'window' && tab.windowId === value.windowId)
     || (value.type === 'selected' && selected.has(tab.id)) || (value.type === 'site' && tab.host === value.host);
 }
@@ -28,9 +27,9 @@ function note(tab) {
 }
 function footerStatus() {
   if (!state) return;
-  const candidates = state.tabs.filter(t => t.canSleep && scoped(t));
-  const q = state.queue;
   const selectedScope = scope();
+  const candidates = state.tabs.filter(t => t.canSleep && scoped(t, selectedScope));
+  const q = state.queue;
   const label = selectedScope.type === 'window' ? t('Unload tabs in this window: {count}', { count: candidates.length })
     : selectedScope.type === 'selected' ? t('Unload selected tabs: {count}', { count: candidates.length })
     : selectedScope.type === 'site' ? t('Unload tabs from this site: {count}', { count: candidates.length })
@@ -117,8 +116,12 @@ function render() {
   }
   const prior = $('scope').value;
   const sites = [...new Set(state.tabs.map(t => t.host).filter(Boolean))].sort();
-  for (const option of [...$('scope').options]) if (option.value.startsWith('site:') && !sites.includes(option.value.slice(5))) option.remove();
-  for (const site of sites) if (![...$('scope').options].some(o => o.value === `site:${site}`)) {
+  const availableSites = new Set(sites), existingSites = new Set();
+  for (const option of [...$('scope').options]) if (option.value.startsWith('site:')) {
+    if (!availableSites.has(option.value.slice(5))) option.remove();
+    else existingSites.add(option.value.slice(5));
+  }
+  for (const site of sites) if (!existingSites.has(site)) {
     const option = document.createElement('option'); option.value = `site:${site}`; option.textContent = t('Site: {site}', { site }); $('scope').append(option);
   }
   for (const option of $('scope').options) if (option.value.startsWith('site:')) option.textContent = t('Site: {site}', { site: option.value.slice(5) });
@@ -145,8 +148,9 @@ async function act(fn) {
 }
 $('pause').addEventListener('click', () => act(async () => { await FireUpUI.send('settings', { value: { enabled: !state.settings.enabled } }); await refresh(); message(state.settings.enabled ? t('Automatic sleep enabled.') : t('Automatic sleep paused. Manual unloading is available.')); }));
 $('sleep').addEventListener('click', () => act(async () => {
-  const ids = state.tabs.filter(t => t.canSleep && scoped(t)).map(t => t.id);
-  const result = await FireUpUI.send('sleep', { scope: scope(), ids });
+  const selectedScope = scope();
+  const ids = state.tabs.filter(t => t.canSleep && scoped(t, selectedScope)).map(t => t.id);
+  const result = await FireUpUI.send('sleep', { scope: selectedScope, ids });
   await refresh(); message(result.busy ? t('A queue is already running.') : t('Tabs queued: {count}.', { count: result.queued }));
 }));
 $('cancel').addEventListener('click', async () => { try { await FireUpUI.send('cancel'); await refresh(); message(t('Queue stopped. Tabs already unloaded remain asleep.')); } catch (e) { message(FireUpI18n.error(e), true); } });
@@ -166,4 +170,3 @@ browser.runtime.onMessage.addListener(event => { if (event?.type === 'changed') 
 const clock = setInterval(() => { if (state && !document.hidden) for (const tab of state.tabs) { const view = rows.get(tab.id); if (view && !view.el.hidden) view.detail.textContent = [tab.host, note(tab)].filter(Boolean).join(' · '); } }, 30000);
 window.addEventListener('unload', () => { clearInterval(clock); clearTimeout(refreshTimer); });
 act(async () => { await FireUpUI.ready; currentWindow = (await browser.windows.getCurrent()).id; await refresh(); });
-

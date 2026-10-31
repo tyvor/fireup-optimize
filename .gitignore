@@ -1,6 +1,7 @@
 node_modules/
 work/
 dist/
+checks/
 preview-*.png
 ui-checks.json
 i18n-ui-checks.json

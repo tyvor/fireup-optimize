@@ -12,26 +12,55 @@
     let writing = Promise.resolve(), settingsTail = Promise.resolve();
     const locks = new Map(), pendingProtections = new Set(), protectionEpochs = new Map();
     let ticking = false, starting = false, flushTimer, badgeTimer;
-    const ready = Promise.all([browser.storage.local.get(['settings', 'firstRunUntil']), browser.storage.session.get('state')]).then(([local, session]) => {
+    let revision = 1, savedRevision = 0, queueItemsDirty = false, recentReady = false;
+    const recent = root.createFireUpWorkingSet(config.keepRecent);
+    const scans = new Set(), pendingActivity = new Map(), tabEpochs = new Map();
+    const ready = Promise.all([browser.storage.local.get(['settings', 'firstRunUntil']), browser.storage.session.get(['state', 'queueItems'])]).then(([local, session]) => {
       config = P.settings(local.settings);
       graceUntil = Number(local.firstRunUntil) || 0;
       if (session.state) data = { ...data, ...session.state };
+      if (data.queue) {
+        queueItemsDirty = Array.isArray(data.queue.items);
+        const items = data.queue.items || session.queueItems;
+        data.queue = Array.isArray(items) ? { ...data.queue, items } : null;
+      }
+      recent.resize(config.keepRecent);
     });
     const report = e => console.error('FireUp:', e);
-    function persist() {
-      const task = writing.then(() => browser.storage.session.set({ state: structuredClone(data) }));
+    function persist(force = true) {
+      if (force) revision++;
+      const task = writing.then(async () => {
+        if (savedRevision === revision) return;
+        const checkpoint = revision, itemsChanged = queueItemsDirty, items = data.queue?.items || null;
+        const queue = data.queue ? { ...data.queue } : null;
+        if (queue) delete queue.items;
+        const payload = { state: { ...data, queue } };
+        if (itemsChanged) payload.queueItems = items;
+        await browser.storage.session.set(structuredClone(payload));
+        savedRevision = checkpoint;
+        if (itemsChanged && (data.queue?.items || null) === items) queueItemsDirty = false;
+      });
       writing = task.catch(report);
       return task;
     }
     function changed() { browser.runtime.sendMessage({ type: 'changed' }).catch(() => {}); }
     function scheduleFlush() {
+      revision++;
       clearTimeout(flushTimer);
-      flushTimer = setTimeout(() => { persist().catch(report); }, 80);
+      flushTimer = setTimeout(() => { persist(false).catch(report); }, 80);
     }
     function meta(id) { return data.meta[id] || (data.meta[id] = { userAccess: 0, navAt: 0, revision: 0 }); }
     function remember(tab) {
       if (tab.incognito) return;
-      data.known[tab.id] = Boolean(tab.discarded);
+      const discarded = Boolean(tab.discarded);
+      if (data.known[tab.id] !== discarded) { data.known[tab.id] = discarded; revision++; }
+    }
+    function track(tab, event = false) {
+      recent.update(tab, P.access(tab, data.meta[tab.id]));
+      if (event) {
+        tabEpochs.set(tab.id, Symbol());
+        for (const scan of scans) scan.set(tab.id, tab.incognito ? null : tab);
+      }
     }
     async function badge() {
       const count = Object.values(data.known).filter(Boolean).length;
@@ -58,13 +87,14 @@
           const stored = await browser.sessions.getTabValue(tab.id, KEY);
           if (protectionEpochs.get(tab.id) === epoch && !Object.hasOwn(data.protections, tab.id)) {
             data.protections[tab.id] = P.protection(stored, now());
+            revision++;
           }
         }
         catch { return { mode: 'unknown' }; }
         if (pendingProtections.has(tab.id) || !Object.hasOwn(data.protections, tab.id)) return { mode: 'unknown' };
       }
       const value = P.protection(data.protections[tab.id], now());
-      if (!value && data.protections[tab.id]) { delete data.protections[tab.id]; return getProtection(tab); }
+      if (!value && data.protections[tab.id]) { delete data.protections[tab.id]; revision++; return getProtection(tab); }
       return value;
     }
     async function protectionMap(tabs) {
@@ -89,23 +119,31 @@
       } else await browser.alarms.clear(AUTO);
     }
     async function getTabs() {
-      const tabs = (await browser.tabs.query({})).filter(t => !t.incognito);
+      const updates = new Map(); scans.add(updates);
+      let listed;
+      try { listed = await browser.tabs.query({}); } finally { scans.delete(updates); }
+      const byId = new Map(listed.filter(t => !t.incognito).map(tab => [tab.id, tab]));
+      // Events delivered during the query are newer than its returned snapshot.
+      for (const [id, tab] of updates) { if (tab) byId.set(id, tab); else byId.delete(id); }
+      const tabs = [...byId.values()];
+      recent.reset(tabs, config.keepRecent, data.meta); recentReady = true;
       const ids = new Set(tabs.map(t => String(t.id)));
       for (const key of Object.keys(data.known)) if (!ids.has(key)) {
         delete data.known[key]; delete data.meta[key]; delete data.protections[key];
+        protectionEpochs.delete(Number(key)); tabEpochs.delete(Number(key)); revision++;
       }
       for (const tab of tabs) {
         remember(tab);
         const entry = data.meta[tab.id];
-        if (entry?.lastUnload && now() - entry.lastUnload.at > 120000) delete entry.lastUnload;
-        if (entry?.holdUntil && entry.holdUntil <= now()) delete entry.holdUntil;
-        if (entry?.lastQuickReturnAt && now() - entry.lastQuickReturnAt > 6 * 3600000) P.clearBackoff(entry);
+        if (entry?.lastUnload && now() - entry.lastUnload.at > 120000) { delete entry.lastUnload; revision++; }
+        if (entry?.holdUntil && entry.holdUntil <= now()) { delete entry.holdUntil; revision++; }
+        if (entry?.lastQuickReturnAt && now() - entry.lastQuickReturnAt > 6 * 3600000) { P.clearBackoff(entry); revision++; }
       }
       return tabs;
     }
     async function snapshot() {
       await ready;
-      const tabs = await getTabs(), values = await protectionMap(tabs), recent = P.recentIds(tabs, config, data.meta);
+      const tabs = await getTabs(), values = await protectionMap(tabs);
       const result = tabs.map(t => {
         const protection = values.get(t.id), reason = P.reason(t, config, protection);
         const due = P.deadline(t, config, data.meta[t.id], graceUntil);
@@ -115,7 +153,7 @@
           active: t.active, discarded: Boolean(t.discarded), protection, reason, note,
           recent: recent.has(t.id), deadline: Number.isFinite(due) ? due : null, canSleep: !t.discarded && !reason };
       });
-      await persist(); await expiryAlarm(); await badge();
+      await persist(false); await expiryAlarm(); await badge();
       return { settings: config, tabs: result, queue: queueStatus(), lastRun: data.lastRun, graceUntil, now: now() };
     }
     function queueStatus() {
@@ -136,16 +174,17 @@
       starting = true;
       try {
         const selectedScope = scope(input), tabs = await getTabs();
-        const values = await protectionMap(tabs), recent = manual ? null : P.recentIds(tabs, config, data.meta);
+        const values = await protectionMap(tabs);
         const approved = Array.isArray(approvedIds) ? new Set(approvedIds.filter(Number.isInteger)) : null;
         const selected = tabs.filter(t => !t.discarded && P.inScope(t, selectedScope) && (!approved || approved.has(t.id)) && !P.reason(t, config, values.get(t.id))
           && (manual || (!recent.has(t.id) && P.deadline(t, config, data.meta[t.id], graceUntil) <= now())))
           .sort((a, b) => P.access(a, data.meta[a.id]) - P.access(b, data.meta[b.id]));
         if (!manual && !config.enabled) return { paused: true };
-        if (!selected.length) { await persist(); await badge(); return { queued: 0 }; }
+        if (!selected.length) { await persist(false); await badge(); return { queued: 0 }; }
         // Capture a generation as well as URL; navigating back to the same URL is still a change.
         data.queue = { manual, items: selected.map(t => ({ id: t.id, url: t.url, access: P.access(t, data.meta[t.id]), revision: meta(t.id).revision })),
           cursor: 0, slept: 0, skipped: 0, failed: 0, cancelled: false, started: now() };
+        queueItemsDirty = true;
         await persist();
         await browser.alarms.create(CONTINUE, { when: now() + 100 });
         changed();
@@ -158,23 +197,30 @@
       ticking = true;
       const q = data.queue, begun = now();
       try {
-        const recent = q.manual || q.cancelled || !config.enabled ? null : P.recentIds(await getTabs(), config, data.meta);
+        if (!q.manual && !q.cancelled && config.enabled && !recentReady) await getTabs();
         let count = 0;
         while (q.cursor < q.items.length && !q.cancelled && (q.manual || config.enabled) && count < 8 && now() - begun < 1200) {
           const candidate = q.items[q.cursor++]; count++;
           try {
+            if (!tabEpochs.has(candidate.id)) tabEpochs.set(candidate.id, Symbol());
+            const epoch = tabEpochs.get(candidate.id);
             const tab = await browser.tabs.get(candidate.id);
+            if (tabEpochs.get(candidate.id) !== epoch) { q.skipped++; continue; }
+            track(tab);
             const value = await getProtection(tab);
             if (tab.incognito) { q.skipped++; continue; }
             const current = meta(tab.id);
             const changedSinceStart = tab.url !== candidate.url || P.access(tab, current) !== candidate.access || current.revision !== candidate.revision;
-            if (q.cancelled || (!q.manual && !config.enabled) || tab.incognito || tab.discarded || changedSinceStart || pendingProtections.has(tab.id) || recent?.has(tab.id) || P.reason(tab, config, value)) { q.skipped++; continue; }
+            if (q.cancelled || (!q.manual && !config.enabled) || tab.incognito || tab.discarded || changedSinceStart || tabEpochs.get(tab.id) !== epoch || pendingActivity.has(tab.id) || pendingProtections.has(tab.id)
+              || (!q.manual && (pendingActivity.size || recent.has(tab.id))) || P.reason(tab, config, value)) { q.skipped++; continue; }
             if (!q.manual && P.deadline(tab, config, current, graceUntil) > now()) { q.skipped++; continue; }
             const marker = config.antiThrash ? { at: now(), url: tab.url, confirmed: false } : null;
             if (marker) current.lastUnload = marker;
             try {
               await browser.tabs.discard(tab.id);
+              const afterEpoch = tabEpochs.get(tab.id);
               const after = await browser.tabs.get(tab.id); remember(after);
+              if (tabEpochs.get(tab.id) === afterEpoch) track(after);
               if (after.discarded) {
                 if (marker && current.lastUnload === marker) marker.confirmed = true;
                 q.slept++;
@@ -192,6 +238,7 @@
         if (q.cancelled || (!q.manual && !config.enabled) || q.cursor >= q.items.length) {
           data.lastRun = { slept: q.slept, skipped: q.skipped, failed: q.failed, cancelled: q.cancelled || (!q.manual && !config.enabled), at: now() };
           data.queue = null;
+          queueItemsDirty = true;
           await browser.alarms.clear(CONTINUE);
         } else await browser.alarms.create(CONTINUE, { when: now() + 1000 });
         await persist(); await badge(); changed();
@@ -231,7 +278,7 @@
       const task = settingsTail.catch(() => {}).then(async () => {
         await ready;
         const next = P.settings({ ...config, ...value });
-        await browser.storage.local.set({ settings: next }); config = next;
+        await browser.storage.local.set({ settings: next }); config = next; recent.resize(config.keepRecent);
         if (!config.antiThrash) {
           for (const entry of Object.values(data.meta)) P.clearBackoff(entry);
           await persist();
@@ -266,22 +313,28 @@
       await persist(); await expiryAlarm(); changed();
     }
     async function activity(id, kind, supplied) {
-      await ready;
-      const tab = supplied || await browser.tabs.get(id);
-      if (tab.incognito) return;
-      const value = meta(id); value.revision++;
-      if (kind === 'user') {
-        P.quickReturn(tab, config, value, now());
-        value.userAccess = now();
-      } else {
-        value.navAt = now();
-        if (value.lastUnload && value.lastUnload.url !== tab.url) delete value.lastUnload;
-      }
-      remember(tab); scheduleFlush();
+      const token = Symbol(); pendingActivity.set(id, token);
+      try {
+        await ready;
+        if (!tabEpochs.has(id)) tabEpochs.set(id, Symbol());
+        const epoch = tabEpochs.get(id);
+        const tab = supplied || await browser.tabs.get(id);
+        if (tab.incognito || tabEpochs.get(id) !== epoch) return;
+        const value = meta(id); value.revision++;
+        if (kind === 'user') {
+          P.quickReturn(tab, config, value, now());
+          value.userAccess = now();
+        } else {
+          value.navAt = now();
+          if (value.lastUnload && value.lastUnload.url !== tab.url) delete value.lastUnload;
+        }
+        remember(tab); track(tab, true); scheduleFlush();
+      } finally { if (pendingActivity.get(id) === token) pendingActivity.delete(id); }
     }
     async function updated(id, change, tab) {
       await ready;
       if (tab.incognito) return;
+      track(tab, true);
       if (change.url || change.status === 'loading' || change.discarded === false) await activity(id, 'navigation', tab);
       if (change.discarded === true) {
         const marker = data.meta[id]?.lastUnload;
@@ -302,6 +355,8 @@
     }
     async function removed(id) {
       await ready; delete data.meta[id]; delete data.protections[id]; delete data.known[id]; protectionEpochs.delete(id);
+      recent.remove(id); tabEpochs.delete(id);
+      for (const scan of scans) scan.set(id, null);
       scheduleFlush(); scheduleBadge();
     }
     async function alarm(name) {
@@ -314,6 +369,3 @@
   root.createFireUp = createFireUp;
   if (typeof module !== 'undefined') module.exports = createFireUp;
 })(globalThis);
-
-
-

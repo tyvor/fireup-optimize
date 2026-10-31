@@ -46,9 +46,9 @@ The UI checks use modeled Firefox APIs. [Testing](docs/TESTING.md) lists what st
 
 ## Source layout
 
-The background scripts load localization, policy rules, settings transfer, the engine, then browser event listeners. Firefox can suspend the background page; alarms wake it when work is due.
+The background scripts load localization, policy rules, settings transfer, the working-set index, the engine, then browser event listeners. Firefox can suspend the background page; alarms wake it when work is due. The recent-tab index is rebuilt on the first automatic batch after a wake, not saved to storage.
 
-`storage.local` holds settings and the first-install grace deadline. `storage.session` holds the queue and temporary activity records for the current browser run. Per-tab protection uses `sessions.setTabValue`. Queue entries and quick-return markers include tab URLs so FireUp can check whether a page changed.
+`storage.local` holds settings and the first-install grace deadline. `storage.session` holds the queue and temporary activity records for the current browser run. Stable queue entries use a separate `queueItems` key, written with the initial checkpoint and cleared when the operation ends. Progress remains in `state`; checkpoints from 0.4.1 with inline items also restore. Per-tab protection uses `sessions.setTabValue`. Queue entries and quick-return markers include tab URLs so FireUp can check whether a page changed.
 
 The English and Russian strings are in `i18n.js`. Manifest translations are in `_locales/en` and `_locales/ru`. Settings exports use format 2; imports also accept format 1 from 0.3.0.
 

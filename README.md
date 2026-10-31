@@ -64,6 +64,8 @@ npm run lint:addon
 
 The UI tests use Chromium with modeled Firefox APIs. They help catch interface regressions but don't replace testing in Firefox. See [Testing](docs/TESTING.md), [Build instructions](BUILD-INSTRUCTIONS.md) and [Release status](docs/RELEASE-STATUS.md).
 
+For the queue benchmark, run `npm run benchmark`. [Performance](docs/PERFORMANCE.md) explains the comparison with 0.4.1. These measurements describe the extension's bookkeeping in a model, not memory saved by real Firefox pages.
+
 ## Bugs and contributions
 
 [Open an issue](https://github.com/tyvor/fireup-optimize/issues) with your FireUp, Firefox and OS versions and the steps that reproduce the problem. English and Russian reports are welcome. Please redact private tab titles, URLs and domains before attaching files or screenshots. [Contributing](CONTRIBUTING.md) has details for code changes.
