@@ -6,5 +6,9 @@ preview-*.png
 ui-checks.json
 i18n-ui-checks.json
 *.log
+FireUp-*.xpi
+FireUp-*.zip
+backups/
+*.bak
 .DS_Store
 Thumbs.db
