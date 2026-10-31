@@ -31,14 +31,14 @@
       if (force) revision++;
       const task = writing.then(async () => {
         if (savedRevision === revision) return;
-        const checkpoint = revision, itemsChanged = queueItemsDirty;
+        const checkpoint = revision, itemsChanged = queueItemsDirty, items = data.queue?.items || null;
         const queue = data.queue ? { ...data.queue } : null;
         if (queue) delete queue.items;
         const payload = { state: { ...data, queue } };
-        if (itemsChanged) payload.queueItems = data.queue?.items || null;
+        if (itemsChanged) payload.queueItems = items;
         await browser.storage.session.set(structuredClone(payload));
         savedRevision = checkpoint;
-        if (checkpoint === revision) queueItemsDirty = false;
+        if (itemsChanged && (data.queue?.items || null) === items) queueItemsDirty = false;
       });
       writing = task.catch(report);
       return task;
