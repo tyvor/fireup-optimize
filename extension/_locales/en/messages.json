@@ -1,5 +1,5 @@
 {
   "extensionName": { "message": "FireUp" },
-  "extensionDescription": { "message": "Unload idle Firefox tabs with a recent working set, site exclusions and manual protection." },
+  "extensionDescription": { "message": "Reduce Firefox's memory use by unloading idle tabs. Keep recent tabs and the sites you choose loaded." },
   "unloadCommand": { "message": "Unload unprotected background tabs in all windows" }
 }
