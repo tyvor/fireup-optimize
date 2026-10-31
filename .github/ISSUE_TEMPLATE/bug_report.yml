@@ -10,7 +10,7 @@ body:
     id: fireup-version
     attributes:
       label: FireUp version
-      placeholder: 0.4.0
+      description: Find the version at the bottom of FireUp's settings page.
     validations:
       required: true
   - type: input
