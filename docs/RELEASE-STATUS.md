@@ -2,13 +2,13 @@
 
 This source update is 0.4.2. It reduces repeated work in the automatic unload queue and adds a minimum width to the popup. It also includes the protection fixes from 0.4.1.
 
-Mozilla publication is deferred while this work continues. GitHub source updates do not update installed copies from the [Mozilla listing](https://addons.mozilla.org/firefox/addon/fireup-optimize/).
+The maintainer has completed a manual popup check in Firefox and is preparing the Mozilla submission. GitHub source updates do not update installed copies from the [Mozilla listing](https://addons.mozilla.org/firefox/addon/fireup-optimize/). The prepared texts are in [Mozilla submission](AMO-SUBMISSION.en.md); this document does not confirm that Mozilla has received or published 0.4.2.
 
 [Testing](TESTING.md) describes the checks and the remaining Firefox work. [Performance](PERFORMANCE.md) has the model benchmark and its limits.
 
 ## Popup confirmation
 
-The CSS now keeps the body at least 320 pixels wide, including while settings and tab data are still loading. The small-viewport tests pass in Chromium. The occasional narrow strip reported in Firefox has not been reproduced in a native popup, so this remains a candidate fix until cold-start and background-wake checks confirm it.
+The CSS now keeps the body at least 320 pixels wide, including while settings and tab data are still loading. The small-viewport tests pass in Chromium. After trying 0.4.2 in Firefox, the maintainer reported that the panel opens normally and that the previous narrow-strip problem was no longer occurring in the manual check.
 
 ## Remaining work
 

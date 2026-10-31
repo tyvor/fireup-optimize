@@ -10,13 +10,13 @@ Run the checks described in [Testing](TESTING.md). The workflow runs them on pus
 
 ## Mozilla
 
-Mozilla submission is deferred until the current work and native checks are finished. When it is ready:
+The maintainer has confirmed normal popup opening in Firefox. Use the following steps to submit 0.4.2; preparing these files does not itself publish the update:
 
 1. Run `Build.ps1` and find `dist/FireUp-0.4.2-unsigned.xpi`.
 2. Open FireUp in [Developer Hub](https://addons.mozilla.org/developers/) and upload a new version to the existing add-on. Keep `fireup@local.extension` as its ID.
 3. Read the validation results. This release targets desktop Firefox 140 or newer; leave Android unselected. The local lint wrapper documents one Android-only warning.
 4. If Mozilla asks for a source archive, provide `FireUp-0.4.2-reviewer-source.zip` from the prepared bundle, including the [build instructions](../BUILD-INSTRUCTIONS.md). A GitHub URL doesn't replace a requested upload.
-5. Update the form using [listing text](AMO-LISTING.en.md), [reviewer notes](AMO-REVIEWER-NOTES.en.md) and the [privacy notice](../PRIVACY.md). Use MIT as the license. Check the author details before submitting.
+5. Use the [submission text](AMO-SUBMISSION.en.md) for version notes and a short reviewer note. The [listing text](AMO-LISTING.en.md), [detailed reviewer notes](AMO-REVIEWER-NOTES.en.md) and [privacy notice](../PRIVACY.md) are also available. Use MIT as the license. Check the author details before submitting.
 6. After the signed update becomes available, test an ordinary installation from the listing.
 
 Use the repository as the homepage and [GitHub Issues](https://github.com/tyvor/fireup-optimize/issues) for support. The privacy URL is [the root PRIVACY.md](https://github.com/tyvor/fireup-optimize/blob/main/PRIVACY.md).

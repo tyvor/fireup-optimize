@@ -42,7 +42,7 @@ npm run lint:addon
 
 Set `FIREUP_BROWSER` if you want the UI tests to use an existing Chromium executable. The tests create their temporary directories and write previews and reports beside the source; those generated files are ignored by Git.
 
-The UI checks use modeled Firefox APIs. [Testing](docs/TESTING.md) lists what still needs to be checked in Firefox, including the known first-opening popup issue.
+The UI checks use modeled Firefox APIs. The maintainer also checked the 0.4.2 popup in Firefox and confirmed normal opening. [Testing](docs/TESTING.md) separates that manual result from the broader compatibility checks still to be recorded.
 
 ## Source layout
 

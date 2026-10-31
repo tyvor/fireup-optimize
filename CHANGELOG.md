@@ -4,7 +4,7 @@
 
 - Automatic unloading now keeps the recent working set up to date from tab events. It no longer requests and sorts the full tab list before every batch. Each candidate still gets its own final check, and the index is rebuilt after the background page wakes.
 - Queue entries are saved once per operation, with smaller progress checkpoints afterward. Refreshing an unchanged panel no longer rewrites session state.
-- Added a 320-pixel minimum popup width. This prevents the CSS from collapsing with a tiny initial viewport; the reported intermittent Firefox first-opening problem still needs native confirmation.
+- Added a 320-pixel minimum popup width to prevent the layout from collapsing during startup. The maintainer checked 0.4.2 in Firefox and confirmed that the panel now opens normally.
 - Removed repeated site-option scans and repeated scope construction while updating the panel.
 - Added queue, working-set and startup-sizing tests, plus a repeatable model benchmark for 100, 500 and 1000 tabs. See [Performance](docs/PERFORMANCE.md) for results and limits.
 
@@ -15,7 +15,7 @@
 - Added 11 protection regression tests. Nine fail on 0.4.0; all 11 pass on 0.4.1.
 - Added UI tests, source and local-link checks, and pinned Mozilla validation to CI. UI tests now create their temporary directories themselves.
 
-The intermittent narrow panel on first opening is still under investigation.
+The intermittent narrow panel on first opening was still under investigation in 0.4.1. See 0.4.2 above for the width change and manual confirmation.
 
 ## 0.4.0
 
