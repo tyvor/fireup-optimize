@@ -20,7 +20,9 @@ The script puts `FireUp-<version>-unsigned.xpi` in `dist/`. It only ZIPs the sou
 
 You can make the same package with any ZIP tool. Archive the contents of `extension/`, so `manifest.json` is at the archive root, then use `.xpi` as the extension. Leave out the docs, tests and repository files.
 
-ZIP tools can produce different timestamps and compression. To compare two packages, compare their extracted files rather than their archive hashes. An unsigned XPI is for development or submission to Mozilla. See [Signing](SIGNING.md) for ordinary installation.
+ZIP tools can produce different timestamps and compression. To compare two packages, compare their extracted files rather than their archive hashes.
+
+An unsigned XPI is for development or submission to Mozilla. Release and beta Firefox require Mozilla's signature for permanent installation. For ordinary use, [install FireUp from Firefox Add-ons](https://addons.mozilla.org/firefox/addon/fireup-optimize/). See [Publishing](docs/PUBLISHING.md) for signing and update instructions.
 
 ## Run the checks
 
@@ -42,7 +44,7 @@ npm run lint:addon
 
 Set `FIREUP_BROWSER` if you want the UI tests to use an existing Chromium executable. The tests create their temporary directories and write previews and reports beside the source; those generated files are ignored by Git.
 
-The UI checks use modeled Firefox APIs. The maintainer also checked the 0.4.2 popup in Firefox and confirmed normal opening. [Testing](docs/TESTING.md) separates that manual result from the broader compatibility checks still to be recorded.
+The UI checks run in Chromium with modeled Firefox APIs. [Testing](docs/TESTING.md) describes their coverage and the checks in Firefox.
 
 ## Source layout
 
