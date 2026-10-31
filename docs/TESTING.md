@@ -30,11 +30,13 @@ The [GitHub workflow](https://github.com/tyvor/fireup-optimize/actions) runs the
 
 ## Native Firefox checks
 
-A basic manual check passed for 0.4.1. That result does not establish native behavior for the 0.4.2 changes. The exact Firefox and OS versions and a complete scenario log still need recording. There are no measured Firefox RAM or CPU results.
+A basic manual check passed for 0.4.1. The maintainer then checked 0.4.2 in Firefox and confirmed that the panel opens normally after the width change. The previously reported narrow strip did not recur in that manual check.
+
+This is a maintainer-reported manual result, separate from the modeled API tests above. The exact Firefox and OS versions, number of cold starts, display configurations and full scenario log were not recorded. There are no measured Firefox RAM or CPU results.
 
 Use disposable pages in a separate profile:
 
-- Open the panel on the first click after starting Firefox, after the background page has been idle, and after reopening. Try both languages, both themes, display scaling and a narrow browser window. Record at least ten cold openings separately from warm openings.
+- Extend the popup check across both languages, both themes, display scaling and a narrow browser window. For a repeatable compatibility record, log cold openings separately from warm openings and openings after background-page idle.
 - During an automatic queue, switch tabs, close recent tabs, create a tab and restore an unloaded tab. Newly recent tabs must stay loaded.
 - Check queue recovery after the background page sleeps, all manual scopes and cancellation.
 - Check active tabs in two windows, pinned tabs, audio, loading pages, calls and screen sharing.
