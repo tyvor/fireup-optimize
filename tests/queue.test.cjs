@@ -19,7 +19,15 @@ test('unchanged snapshots do not clone and rewrite session state', async () => {
 });
 
 test('queue items are saved once, progress checkpoints contain only queue status', async () => {
-  const h = harness({ count: 100 }); await h.engine.start(false);
+  const h = harness({ count: 100 }), entered = deferred(), response = deferred();
+  const set = h.browser.storage.session.set;
+  let delay = true;
+  h.browser.storage.session.set = async value => {
+    if (delay) { delay = false; entered.resolve(); await response.promise; }
+    return set(value);
+  };
+  const starting = h.engine.start(false); await entered.promise;
+  await h.engine.activity(100, 'user'); response.resolve(); await starting;
   assert.equal(h.session.queueItems.length, 99); assert(!Object.hasOwn(h.session.state.queue, 'items'));
   assert.equal(h.calls.queueItemWrites, 1);
   await h.engine.tick(); assert.equal(h.calls.queueItemWrites, 1);
