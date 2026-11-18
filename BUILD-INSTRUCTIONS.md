@@ -4,25 +4,18 @@ FireUp runs from the files in `extension/`. There is no compiler, bundler or min
 
 ## Make an XPI
 
-On Windows, run this from the repository root:
-
-```powershell
-powershell -NoProfile -File .\Build.ps1
-```
-
-PowerShell 7 works too:
+The 1.0.0 package was reproduced on Windows with PowerShell 7.6.9 and Node.js 24.21.0. It requires PowerShell 7 and Node.js 22 or newer. Install [Node.js](https://nodejs.org/en/download) and [PowerShell](https://learn.microsoft.com/powershell/scripting/install/installing-powershell), then run these commands from the extracted project root:
 
 ```sh
+npm run locales
 pwsh -NoProfile -File ./Build.ps1
 ```
 
-The script puts `FireUp-<version>-unsigned.xpi` in `dist/`. It only ZIPs the source files and doesn't use the network.
+The first command regenerates the runtime catalog and Firefox manifest translations from `locales/`. The second checks that output and packages `FireUp-<version>-unsigned.xpi` in `dist/`. Both commands run without installing npm dependencies or accessing the network.
 
 You can make the same package with any ZIP tool. Archive the contents of `extension/`, so `manifest.json` is at the archive root, then use `.xpi` as the extension. Leave out the docs, tests and repository files.
 
-ZIP tools can produce different timestamps and compression. To compare two packages, compare their extracted files rather than their archive hashes.
-
-An unsigned XPI is for development or submission to Mozilla. Release and beta Firefox require Mozilla's signature for permanent installation. For ordinary use, [install FireUp from Firefox Add-ons](https://addons.mozilla.org/firefox/addon/fireup-optimize/). See [Publishing](docs/PUBLISHING.md) for signing and update instructions.
+ZIP tools can produce different timestamps and compression. To compare two packages, compare their extracted files rather than their archive hashes. An unsigned XPI is for development or submission to Mozilla. For ordinary use, [install FireUp from Firefox Add-ons](https://addons.mozilla.org/firefox/addon/fireup-optimize/). See [Publishing](docs/PUBLISHING.md) for signed updates.
 
 ## Run the checks
 
@@ -52,6 +45,6 @@ The background scripts load localization, policy rules, settings transfer, the w
 
 `storage.local` holds settings and the first-install grace deadline. `storage.session` holds the queue and temporary activity records for the current browser run. Stable queue entries use a separate `queueItems` key, written with the initial checkpoint and cleared when the operation ends. Progress remains in `state`; checkpoints from 0.4.1 with inline items also restore. Per-tab protection uses `sessions.setTabValue`. Queue entries and quick-return markers include tab URLs so FireUp can check whether a page changed.
 
-The English and Russian strings are in `i18n.js`. Manifest translations are in `_locales/en` and `_locales/ru`. Settings exports use format 2; imports also accept format 1 from 0.3.0.
+Source translations are in `locales/`. Run `npm run locales` to generate the runtime catalog and Firefox's manifest translations. See the [translation guide](docs/TRANSLATING.ru.md). Settings exports use format 2 and imports also accept format 1 from 0.3.0.
 
 No content scripts or website-content permissions are needed. JSON imports are checked as data and never evaluated as code. [PRIVACY.md](PRIVACY.md) covers local storage in more detail.

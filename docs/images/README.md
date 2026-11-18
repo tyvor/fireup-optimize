@@ -1,6 +1,6 @@
 # Screenshots
 
-These are captures of the FireUp 0.4.1 interface with demo data. They were taken in Chromium with modeled Firefox APIs, so they show the UI rather than a native Firefox test or a memory benchmark.
+`fireup-1.0.0.png` shows the redesigned panel and settings using demonstration data in Edge with modeled Firefox APIs. The other captures document the 0.4.1 interface.
 
 - `popup-light.png` and `popup-dark.png` show the tab panel in both themes.
 - `settings.png` shows the preferences and language selector.

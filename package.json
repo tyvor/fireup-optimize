@@ -1,6 +1,6 @@
 {
   "name": "fireup",
-  "version": "0.4.2",
+  "version": "1.0.0",
   "private": true,
   "license": "MIT",
   "engines": {
@@ -9,7 +9,8 @@
   "scripts": {
     "test": "node --test tests/engine.test.cjs tests/features.test.cjs tests/i18n.test.cjs tests/protection.test.cjs tests/working-set.test.cjs tests/queue.test.cjs",
     "test:ui": "node tests/ui.test.cjs && node tests/i18n-ui.test.cjs && node tests/popup-sizing.test.cjs",
-    "check:source": "node tests/check-source.cjs",
+    "check:source": "node scripts/build-locales.cjs --check && node tests/check-source.cjs",
+    "locales": "node scripts/build-locales.cjs",
     "benchmark": "node --expose-gc tests/benchmark.cjs",
     "lint:addon": "node tests/lint-addon.cjs"
   },

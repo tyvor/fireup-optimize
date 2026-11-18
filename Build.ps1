@@ -1,4 +1,6 @@
 $ErrorActionPreference = 'Stop'
+& node (Join-Path $PSScriptRoot 'scripts/build-locales.cjs') --check
+if ($LASTEXITCODE -ne 0) { throw 'Locale check failed. Run npm run locales before packaging.' }
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $fireupSource = Join-Path $PSScriptRoot 'extension'
 $fireupManifest = Get-Content -LiteralPath (Join-Path $fireupSource 'manifest.json') -Raw | ConvertFrom-Json

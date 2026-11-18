@@ -16,7 +16,7 @@ By default, your 10 most recently used tabs stay loaded. Other tabs can be unloa
 
 You can also:
 
-- Unload tabs yourself: selected tabs, the current window, all windows or a particular site.
+- Preview which tabs will be unloaded, then choose selected tabs, the current window, all windows, a site or the current search results.
 - Protect a tab temporarily or until you remove its protection.
 - Exclude websites you want to keep loaded.
 - Search and filter your tabs.
@@ -31,7 +31,7 @@ Protect tabs with unsaved work, editors, forms or silent playback. FireUp doesn'
 
 Tab information is processed locally and isn't sent to the developer. There are no analytics, ads or external services.
 
-The interface supports English and Russian. It starts with your browser's language, and you can change it in settings.
+The interface supports English, Russian, Japanese, German, Spanish, Mexican Spanish, Portuguese and Brazilian Portuguese. It uses Firefox's language when supported, and you can change it in settings.
 
 Requires desktop Firefox 140 or later. Memory savings depend on the pages and Firefox.
 
@@ -51,11 +51,6 @@ https://github.com/tyvor/fireup-optimize/issues
 - Support: https://github.com/tyvor/fireup-optimize/issues
 - Privacy notice: https://github.com/tyvor/fireup-optimize/blob/main/PRIVACY.md
 
-## Screenshot captions
+## Screenshot caption
 
-1. `docs/images/popup-light.png`: Search tabs, protect important pages and choose what to unload.
-2. `docs/images/popup-dark.png`: The same tab panel in the dark theme.
-3. `docs/images/settings.png`: Adjust the recent-tab count, idle timer, site exclusions and language.
-4. `docs/images/settings-transfer.png`: Review a settings file before applying it.
-
-These screenshots use demonstration data. See [Screenshots](images/README.md) for how they were captured.
+`docs/images/fireup-1.0.0.png` shows the tab summary and settings in the dark theme. It uses demonstration tabs.

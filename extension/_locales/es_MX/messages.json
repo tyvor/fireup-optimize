@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "FireUp"
+  },
+  "extensionDescription": {
+    "message": "Descarga pestañas inactivas de Firefox. Puedes mantener cargadas las recientes, excluir sitios y proteger pestañas."
+  },
+  "unloadCommand": {
+    "message": "Descargar pestañas sin protección en segundo plano en todas las ventanas"
+  }
+}

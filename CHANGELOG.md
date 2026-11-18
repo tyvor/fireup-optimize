@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.0
+
+- Redesigned the panel and settings in a Firefox-style gray palette with outline icons. The panel starts with a tab summary and a collapsible list.
+- Added a candidate preview and a search-results scope. A selected site stays selected when its last tab closes.
+- Grouped settings and added three presets for the idle timer and recent working set. Presets use the existing settings fields.
+- Moved English and Russian translations into catalogs. Adding a catalog now updates the language picker, runtime text and Firefox metadata through one generation command.
+- Added Japanese, German, Spanish, Mexican Spanish, Portuguese and Brazilian Portuguese.
+- The popup keeps its height while loading and opening the tab list. The loaded and sleeping counters switch to shorter cards when the list is open.
+- Settings show when there are unsaved changes. The Save button is enabled only when the form differs from the saved settings.
+
 ## 0.4.2
 
 - Automatic unloading now keeps the recent working set up to date from tab events. It no longer requests and sorts the full tab list before every batch. Each candidate still gets its own final check, and the index is rebuilt after the background page wakes.

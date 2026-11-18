@@ -8,13 +8,40 @@ function message(text, error = false) { $('status').textContent = text; $('statu
 function scope() {
   const value = $('scope').value;
   if (value === 'window') return { type: 'window', windowId: currentWindow };
+  if (value === 'search') return { type: 'search' };
   if (value === 'selected') return { type: 'selected', ids: [...selected] };
   if (value.startsWith('site:')) return { type: 'site', host: value.slice(5) };
-  return { type: 'all' };
+  return { type: value === 'all' ? 'all' : 'none' };
 }
 function scoped(tab, value) {
   return value.type === 'all' || (value.type === 'window' && tab.windowId === value.windowId)
+    || (value.type === 'search' && rows.get(tab.id)?.el.hidden === false)
     || (value.type === 'selected' && selected.has(tab.id)) || (value.type === 'site' && tab.host === value.host);
+}
+function candidatesFor(selectedScope) {
+  return state.tabs.filter(tab => tab.canSleep && scoped(tab, selectedScope));
+}
+function renderPreview(candidates) {
+  $('preview-label').textContent = t('Show candidates ({count})', { count: candidates.length });
+  if (!$('candidate-preview').open) return;
+  const list = document.createDocumentFragment();
+  for (const tab of candidates.slice(0, 80)) {
+    const item = document.createElement('li');
+    item.textContent = tab.title;
+    if (tab.host && tab.title !== tab.host) {
+      const domain = document.createElement('span');
+      domain.className = 'muted';
+      domain.textContent = ' · ' + tab.host;
+      item.append(domain);
+    }
+    list.append(item);
+  }
+  if (candidates.length > 80) {
+    const item = document.createElement('li');
+    item.textContent = t('And {count} more', { count: candidates.length - 80 });
+    list.append(item);
+  }
+  $('candidates').replaceChildren(list);
 }
 function note(tab) {
   if (tab.discarded) return t('Asleep');
@@ -28,20 +55,23 @@ function note(tab) {
 function footerStatus() {
   if (!state) return;
   const selectedScope = scope();
-  const candidates = state.tabs.filter(t => t.canSleep && scoped(t, selectedScope));
+  const candidates = candidatesFor(selectedScope);
   const q = state.queue;
   const label = selectedScope.type === 'window' ? t('Unload tabs in this window: {count}', { count: candidates.length })
     : selectedScope.type === 'selected' ? t('Unload selected tabs: {count}', { count: candidates.length })
     : selectedScope.type === 'site' ? t('Unload tabs from this site: {count}', { count: candidates.length })
+    : selectedScope.type === 'search' ? t('Unload search results: {count}', { count: candidates.length })
     : t('Unload tabs in all windows: {count}', { count: candidates.length });
-  $('sleep').textContent = q ? t('Queue: {processed} of {total}', q) : label;
+  $('sleep-label').textContent = q ? t('Queue: {processed} of {total}', q) : label;
   $('sleep').disabled = working || Boolean(q) || !candidates.length;
   $('cancel').hidden = !q; $('cancel').disabled = Boolean(q?.cancelled);
   $('pause').disabled = working;
-  const filtered = $('search').value.trim() || $('filter').value !== 'all';
+  const hiddenCount = candidates.filter(tab => rows.get(tab.id)?.el.hidden).length;
+  $('candidate-preview').hidden = Boolean(q) || !candidates.length;
+  if (!$('candidate-preview').hidden) renderPreview(candidates);
   $('scope-note').textContent = q ? t('Unloaded {slept}, skipped {skipped}, failed {failed}.', q)
-    : filtered ? t('Search and filters only change the list. Hidden tabs in the selected scope are included. Protected tabs stay loaded.')
-    : t('Manual unloading includes recent tabs. Protected tabs stay loaded.');
+    : !candidates.length ? t('No tabs can be unloaded in this scope.')
+    : hiddenCount ? t('Hidden candidates: {count}', { count: hiddenCount }) : '';
 }
 function row(tab) {
   const el = document.createElement('div'); el.className = 'tab-row'; el.dataset.id = tab.id;
@@ -55,6 +85,7 @@ function row(tab) {
   const detail = document.createElement('span'); detail.className = 'tab-note'; info.append(title, detail);
   info.addEventListener('click', () => act(async () => { await FireUpUI.send('focus', { id: tab.id }); window.close(); }));
   const protect = document.createElement('button'); protect.type = 'button'; protect.className = 'protect'; protect.setAttribute('aria-controls', 'protection-menu');
+  protect.setAttribute('aria-expanded', 'false');
   protect.addEventListener('click', () => {
     for (const view of rows.values()) view.protect.setAttribute('aria-expanded', 'false');
     protectedId = tab.id;
@@ -77,11 +108,17 @@ function render() {
   const oldLanguage = FireUpI18n.language;
   FireUpUI.configure(state.settings);
   if (oldLanguage !== FireUpI18n.language) { message(''); shownRun = 0; }
-  $('counts').textContent = t('Loaded {loaded} of {total}', { loaded: state.tabs.filter(t => !t.discarded).length, total: state.tabs.length });
+  const total = state.tabs.length, loaded = state.tabs.filter(tab => !tab.discarded).length;
+  const numbers = new Intl.NumberFormat(FireUpI18n.language);
+  $('counts').textContent = t('Loaded {loaded} of {total}', { loaded: numbers.format(loaded), total: numbers.format(total) });
+  $('loaded-count').textContent = numbers.format(loaded);
+  $('sleeping-count').textContent = numbers.format(total - loaded);
+  $('scope').disabled = false;
   $('auto').textContent = state.settings.enabled ? t('Automatic sleep on') : t('Automatic sleep paused');
-  $('pause').textContent = state.settings.enabled ? t('Pause') : t('Resume');
+  $('pause-label').textContent = state.settings.enabled ? t('Pause') : t('Resume');
+  $('pause-glyph').setAttribute('href', state.settings.enabled ? 'icons/ui.svg#pause' : 'icons/ui.svg#play');
   $('pause').setAttribute('aria-pressed', String(!state.settings.enabled));
-  const query = $('search').value.toLocaleLowerCase(), filter = $('filter').value;
+  const query = $('search').value.trim().toLocaleLowerCase(FireUpI18n.language), filter = $('filter').value;
   const ids = new Set(state.tabs.map(t => t.id));
   for (const [id, view] of rows) if (!ids.has(id)) {
     const hadFocus = view.el.contains(document.activeElement);
@@ -93,13 +130,14 @@ function render() {
   for (const tab of state.tabs) {
     if (!rows.has(tab.id)) { const view = row(tab); rows.set(tab.id, view); $('tabs').append(view.el); }
     const view = rows.get(tab.id);
-    const matches = `${tab.title} ${tab.host}`.toLocaleLowerCase().includes(query)
+    const matches = `${tab.title} ${tab.host}`.toLocaleLowerCase(FireUpI18n.language).includes(query)
       && (filter === 'all' || (filter === 'loaded' && !tab.discarded) || (filter === 'sleeping' && tab.discarded) || (filter === 'protected' && tab.reason));
     if (!matches && view.el.contains(document.activeElement)) $('search').focus();
     view.el.hidden = !matches; if (matches) visible++;
     view.el.classList.toggle('asleep', tab.discarded);
     view.title.textContent = tab.title === 'Untitled tab' ? t('Untitled tab') : tab.title; view.info.title = `${tab.title}\n${tab.host}`;
-    view.detail.textContent = [tab.host, note(tab)].filter(Boolean).join(' · ');
+    view.detail.textContent = note(tab);
+    view.detail.title = tab.host;
     view.choose.checked = selected.has(tab.id); view.choose.disabled = !tab.canSleep;
     view.choose.setAttribute('aria-label', t('Select: {title}', { title: tab.title }));
     view.letter.textContent = tab.host ? tab.host[0].toUpperCase() : '·';
@@ -118,7 +156,7 @@ function render() {
   const sites = [...new Set(state.tabs.map(t => t.host).filter(Boolean))].sort();
   const availableSites = new Set(sites), existingSites = new Set();
   for (const option of [...$('scope').options]) if (option.value.startsWith('site:')) {
-    if (!availableSites.has(option.value.slice(5))) option.remove();
+    if (option.value !== prior && !availableSites.has(option.value.slice(5))) option.remove();
     else existingSites.add(option.value.slice(5));
   }
   for (const site of sites) if (!existingSites.has(site)) {
@@ -126,6 +164,7 @@ function render() {
   }
   for (const option of $('scope').options) if (option.value.startsWith('site:')) option.textContent = t('Site: {site}', { site: option.value.slice(5) });
   if (protectedId && rows.has(protectedId)) $('protection-title').textContent = t('Protection: {title}', { title: rows.get(protectedId).title.textContent });
+  else if (protectedId) closeProtection();
   if ([...$('scope').options].some(o => o.value === prior)) $('scope').value = prior;
   if (state.lastRun && state.lastRun.at !== shownRun) {
     shownRun = state.lastRun.at;
@@ -133,7 +172,11 @@ function render() {
   }
   footerStatus(); $('retry').hidden = true;
 }
-async function refresh() { state = await FireUpUI.send('state'); render(); }
+async function refresh() {
+  if (!Number.isInteger(currentWindow)) currentWindow = (await browser.windows.getCurrent()).id;
+  state = await FireUpUI.send('state');
+  render();
+}
 function scheduleRefresh() {
   if (working) { refreshPending = true; return; }
   clearTimeout(refreshTimer);
@@ -149,8 +192,10 @@ async function act(fn) {
 $('pause').addEventListener('click', () => act(async () => { await FireUpUI.send('settings', { value: { enabled: !state.settings.enabled } }); await refresh(); message(state.settings.enabled ? t('Automatic sleep enabled.') : t('Automatic sleep paused. Manual unloading is available.')); }));
 $('sleep').addEventListener('click', () => act(async () => {
   const selectedScope = scope();
-  const ids = state.tabs.filter(t => t.canSleep && scoped(t, selectedScope)).map(t => t.id);
-  const result = await FireUpUI.send('sleep', { scope: selectedScope, ids });
+  const ids = candidatesFor(selectedScope).map(tab => tab.id);
+  if (!ids.length) return;
+  const approvedScope = selectedScope.type === 'search' ? { type: 'selected', ids } : selectedScope;
+  const result = await FireUpUI.send('sleep', { scope: approvedScope, ids });
   await refresh(); message(result.busy ? t('A queue is already running.') : t('Tabs queued: {count}.', { count: result.queued }));
 }));
 $('cancel').addEventListener('click', async () => { try { await FireUpUI.send('cancel'); await refresh(); message(t('Queue stopped. Tabs already unloaded remain asleep.')); } catch (e) { message(FireUpI18n.error(e), true); } });
@@ -159,7 +204,13 @@ $('refresh').addEventListener('click', () => act(async () => { await refresh(); 
 $('retry').addEventListener('click', () => act(refresh));
 $('search').addEventListener('input', () => { if (state) render(); });
 $('filter').addEventListener('change', () => { if (state) render(); });
-$('scope').addEventListener('change', footerStatus);
+$('scope').addEventListener('change', () => {
+  if ($('scope').value === 'search') $('tab-list').open = true;
+  footerStatus();
+});
+$('candidate-preview').addEventListener('toggle', () => {
+  if (state && $('candidate-preview').open) renderPreview(candidatesFor(scope()));
+});
 $('close-protection').addEventListener('click', closeProtection);
 for (const button of document.querySelectorAll('[data-protect]')) button.addEventListener('click', () => act(async () => {
   await FireUpUI.send('protect', { id: protectedId, mode: button.dataset.protect });
@@ -167,6 +218,7 @@ for (const button of document.querySelectorAll('[data-protect]')) button.addEven
 }));
 document.addEventListener('keydown', event => { if (event.key === 'Escape' && !$('protection-menu').hidden) { event.preventDefault(); closeProtection(); } });
 browser.runtime.onMessage.addListener(event => { if (event?.type === 'changed') scheduleRefresh(); });
-const clock = setInterval(() => { if (state && !document.hidden) for (const tab of state.tabs) { const view = rows.get(tab.id); if (view && !view.el.hidden) view.detail.textContent = [tab.host, note(tab)].filter(Boolean).join(' · '); } }, 30000);
+browser.tabs?.onRemoved?.addListener(scheduleRefresh);
+const clock = setInterval(() => { if (state && !document.hidden) for (const tab of state.tabs) { const view = rows.get(tab.id); if (view && !view.el.hidden) view.detail.textContent = note(tab); } }, 30000);
 window.addEventListener('unload', () => { clearInterval(clock); clearTimeout(refreshTimer); });
-act(async () => { await FireUpUI.ready; currentWindow = (await browser.windows.getCurrent()).id; await refresh(); });
+act(async () => { await FireUpUI.ready; await refresh(); });

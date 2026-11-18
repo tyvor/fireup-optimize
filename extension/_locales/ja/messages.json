@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "FireUp"
+  },
+  "extensionDescription": {
+    "message": "Firefox で使っていないタブをアンロードします。最近使ったタブを保持し、サイトの除外やタブの保護を設定できます。"
+  },
+  "unloadCommand": {
+    "message": "全ウィンドウの保護されていないバックグラウンドタブをアンロード"
+  }
+}

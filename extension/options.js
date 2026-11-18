@@ -1,7 +1,48 @@
 'use strict';
 const $ = id => document.getElementById(id);
 const t = (key, values) => FireUpI18n.t(key, values);
-let busy = false, pendingImport = null, importGeneration = 0, exportUrl = null, statusKey = '', statusError = false;
+const form = $('settings');
+const editable = [...form.querySelectorAll('input, select, textarea, button[type="button"]')];
+const presets = { gentle: { keep: 20, idle: 30 }, balanced: { keep: 10, idle: 10 }, active: { keep: 5, idle: 5 } };
+const presetButtons = [...document.querySelectorAll('[data-preset]')];
+let savedDraft, busy = false, pendingImport = null, importGeneration = 0, exportUrl = null, statusKey = '', statusError = false;
+function readDraft() {
+  return {
+    keepRecent: $('keep').valueAsNumber,
+    idleMinutes: $('idle').valueAsNumber,
+    sites: $('sites').value,
+    theme: $('theme').value,
+    language: $('language').value,
+    antiThrash: $('anti-thrash').checked
+  };
+}
+function hasChanges(draft) {
+  return savedDraft !== undefined && Object.keys(savedDraft).some(key => !Object.is(draft[key], savedDraft[key]));
+}
+function updateSaveState() {
+  const dirty = hasChanges(readDraft());
+  $('save').disabled = busy || !dirty;
+  const message = dirty ? t('You have unsaved changes.') : '';
+  if ($('unsaved').textContent !== message) $('unsaved').textContent = message;
+}
+function draftChanged() {
+  updatePreset();
+  $('saved').textContent = '';
+  $('saved').className = '';
+  updateSaveState();
+}
+function updatePreset() {
+  for (const button of presetButtons) {
+    const { keep, idle } = presets[button.dataset.preset];
+    button.setAttribute('aria-pressed', String($('keep').valueAsNumber === keep && $('idle').valueAsNumber === idle));
+  }
+}
+for (const button of presetButtons) button.addEventListener('click', () => {
+  const { keep, idle } = presets[button.dataset.preset];
+  $('keep').valueAsNumber = keep;
+  $('idle').valueAsNumber = idle;
+  draftChanged();
+});
 function transferStatus(key, error = false) {
   statusKey = key; statusError = error;
   $('transfer-status').textContent = error ? FireUpI18n.error(key) : t(key);
@@ -9,27 +50,29 @@ function transferStatus(key, error = false) {
 }
 function setBusy(value) {
   busy = value;
-  for (const button of [$('settings').querySelector('button[type=submit]'), $('export'), $('apply-import'), $('cancel-import')]) button.disabled = value;
-  $('import-file').disabled = value; $('language').disabled = value;
+  for (const control of [...editable, $('export'), $('apply-import'), $('cancel-import'), $('import-file')]) control.disabled = value;
+  updateSaveState();
 }
 function importSummary(value) {
   $('import-summary').textContent = t('Automatic sleep: {enabled}. Working set: {keep}. Timer: {idle} min. Quick-return delay: {anti}. Theme: {theme}. Language: {language}. Sites: {sites}.', {
     enabled: t(value.enabled ? 'On' : 'Paused'), keep: value.keepRecent, idle: value.idleMinutes,
     anti: t(value.antiThrash ? 'Enabled' : 'Disabled'), theme: t({ system: 'System', light: 'Light', dark: 'Dark' }[value.theme]),
-    language: value.language === 'auto' ? t('Browser default') : value.language === 'en' ? 'English' : 'Русский', sites: value.sites.length
+    language: FireUpI18n.languageName(value.language), sites: value.sites.length
   });
   $('import-sites').value = value.sites.join('\n'); $('import-sites').placeholder = value.sites.length ? '' : t('No site exclusions');
 }
 function configure() {
   FireUpUI.configure({ theme: $('theme').value, language: $('language').value });
   if (pendingImport) importSummary(pendingImport.settings);
-  transferStatus(statusKey, statusError); $('saved').textContent = '';
+  transferStatus(statusKey, statusError);
 }
 function setForm(settings) {
   $('keep').value = settings.keepRecent; $('idle').value = settings.idleMinutes;
   $('sites').value = settings.sites.join('\n'); $('theme').value = settings.theme;
   $('language').value = settings.language || 'auto'; $('anti-thrash').checked = settings.antiThrash;
+  savedDraft = readDraft();
   configure();
+  draftChanged();
 }
 function clearPreview() {
   importGeneration++; pendingImport = null; $('import-preview').hidden = true;
@@ -43,16 +86,26 @@ async function load() {
     $('settings').hidden = false; $('transfer').hidden = false; $('loading').hidden = true;
   } catch (e) { $('loading').textContent = t('Could not load settings: {error}', { error: FireUpI18n.error(e) }); $('retry').hidden = false; }
 }
+for (const { code, name } of FireUpI18n.languages) {
+  const option = new Option(name, code);
+  option.lang = code;
+  $('language').add(option);
+}
 $('retry').addEventListener('click', load);
 $('theme').addEventListener('change', () => FireUpUI.theme($('theme').value));
 $('language').addEventListener('change', configure);
-$('settings').addEventListener('submit', async event => {
-  event.preventDefault(); if (busy) return; setBusy(true);
+form.addEventListener('input', draftChanged);
+form.addEventListener('change', draftChanged);
+form.addEventListener('submit', async event => {
+  event.preventDefault();
+  const draft = readDraft();
+  if (busy || !hasChanges(draft)) return;
+  setBusy(true);
   try {
-    const sites = $('sites').value.split(/\r?\n/).map(s => s.trim()).filter(Boolean).map(FireUpPolicy.site);
+    const sites = draft.sites.split(/\r?\n/).map(s => s.trim()).filter(Boolean).map(FireUpPolicy.site);
     if (sites.length > 500) throw new Error('Use at most 500 excluded domains.');
-    const settings = await FireUpUI.send('settings', { value: { keepRecent: Number($('keep').value), idleMinutes: Number($('idle').value), sites, theme: $('theme').value, antiThrash: $('anti-thrash').checked, language: $('language').value } });
-    FireUpUI.configure(settings);
+    const settings = await FireUpUI.send('settings', { value: { ...draft, sites } });
+    setForm(settings);
     $('saved').textContent = t('Settings saved.'); $('saved').className = '';
   } catch (e) { $('saved').textContent = FireUpI18n.error(e); $('saved').className = 'error'; }
   finally { setBusy(false); }
