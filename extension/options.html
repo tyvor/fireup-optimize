@@ -1,25 +1,106 @@
 <!doctype html>
-<html lang="en" data-title="FireUp settings"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FireUp settings</title><link rel="stylesheet" href="ui.css"></head><body class="settings-page">
-<header><h1 data-i18n="FireUp settings">FireUp settings</h1><span class="muted">0.4.2</span></header>
-<p id="loading" role="status" data-i18n="Loading settings…">Loading settings…</p>
-<form id="settings" hidden>
-<div class="setting"><label for="keep" data-i18n="Recent working set">Recent working set</label><input id="keep" type="number" min="1" max="100" required><small data-i18n="Keep this many recently used tabs loaded. Protected tabs may increase the total.">Keep this many recently used tabs loaded. Protected tabs may increase the total.</small></div>
-<div class="setting"><label for="idle" data-i18n="Idle time before sleep, minutes">Idle time before sleep, minutes</label><input id="idle" type="number" min="1" max="1440" required><small data-i18n="Tabs outside the working set can sleep after this time. Background reloads do not count as visits.">Tabs outside the working set can sleep after this time. Background reloads do not count as visits.</small></div>
-<div class="setting inline"><input id="anti-thrash" type="checkbox"><label for="anti-thrash" data-i18n="Delay sleep after a quick return">Delay sleep after a quick return</label></div>
-<p class="setting-help" data-i18n="Returning within two minutes of a FireUp unload delays the next automatic sleep. With a 10-minute timer, the delay grows to 20, 40, 80 and 120 minutes. Manual unloading remains available.">Returning within two minutes of a FireUp unload delays the next automatic sleep. With a 10-minute timer, the delay grows to 20, 40, 80 and 120 minutes. Manual unloading remains available.</p>
-<div class="setting"><label for="sites" data-i18n="Never unload these sites">Never unload these sites</label><textarea id="sites" placeholder="One domain per line" data-i18n-placeholder="One domain per line"></textarea><small data-i18n="A domain also protects its subdomains. Use chatgpt.com to protect all its tabs. Do not include paths, ports or wildcards.">A domain also protects its subdomains. Use chatgpt.com to protect all its tabs. Do not include paths, ports or wildcards.</small></div>
-<div class="setting"><label for="theme" data-i18n="Appearance">Appearance</label><select id="theme"><option value="system" data-i18n="System">System</option><option value="light" data-i18n="Light">Light</option><option value="dark" data-i18n="Dark">Dark</option></select></div>
-<div class="setting"><label for="language" data-i18n="Language">Language</label><select id="language"><option value="auto" data-i18n="Browser default">Browser default</option><option value="en">English</option><option value="ru">Русский</option></select><small data-i18n="Uses the browser interface language. Other languages fall back to English.">Uses the browser interface language. Other languages fall back to English.</small></div>
-<button type="submit" class="primary" data-i18n="Save settings">Save settings</button><p id="saved" role="status" aria-live="polite"></p>
-</form><button id="retry" hidden data-i18n="Retry">Retry</button>
-<section id="transfer" class="transfer" aria-labelledby="transfer-title" hidden>
-<h2 id="transfer-title" data-i18n="Settings transfer">Settings transfer</h2>
-<p class="muted" data-i18n="Export includes applied settings and excluded domains. Per-tab protection and open-tab URLs are not included.">Export includes applied settings and excluded domains. Per-tab protection and open-tab URLs are not included.</p>
-<div class="transfer-actions"><button id="export" class="outlined" data-i18n="Export settings">Export settings</button><label for="import-file" data-i18n="Choose an import file">Choose an import file</label><input id="import-file" type="file" accept=".json,application/json"></div>
-<div id="import-preview" hidden>
-<h3 data-i18n="Settings from file">Settings from file</h3><p id="import-summary"></p><label for="import-sites" data-i18n="Excluded sites">Excluded sites</label><textarea id="import-sites" rows="3" readonly></textarea>
-<p class="muted" data-i18n="Applying this file replaces all current settings, including whether automatic sleep is enabled.">Applying this file replaces all current settings, including whether automatic sleep is enabled.</p>
-<div class="transfer-actions"><button id="apply-import" class="primary" data-i18n="Apply import">Apply import</button><button id="cancel-import" data-i18n="Cancel">Cancel</button></div>
-</div><p id="transfer-status" role="status" aria-live="polite"></p></section>
-<footer><span data-i18n="FireUp does not read page contents or detect every form or silent playback. Protect tabs or sites with unsaved input. Active, pinned, audible tabs and browser-reported calls are skipped. Private tabs are excluded.">FireUp does not read page contents or detect every form or silent playback. Protect tabs or sites with unsaved input. Active, pinned, audible tabs and browser-reported calls are skipped. Private tabs are excluded.</span><br><br><span data-i18n="Alt+Shift+U unloads unprotected background tabs in all windows. FireUp does not close tabs or terminate processes.">Alt+Shift+U unloads unprotected background tabs in all windows. FireUp does not close tabs or terminate processes.</span></footer>
-<script src="i18n.js"></script><script src="policy.js"></script><script src="transfer.js"></script><script src="ui-common.js"></script><script src="options.js"></script></body></html>
+<html lang="en" data-title="FireUp settings">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>FireUp settings</title>
+  <link rel="stylesheet" href="ui.css">
+</head>
+<body class="settings-page">
+  <header class="settings-header">
+    <div class="brand">
+      <img src="icons/fireup.svg" alt="" width="32" height="32">
+      <h1 data-i18n="FireUp settings">FireUp settings</h1>
+    </div>
+    <span class="muted">1.0.0</span>
+  </header>
+  <p id="loading" role="status" data-i18n="Loading settings…">Loading settings…</p>
+  <main>
+    <form id="settings" hidden>
+      <section class="settings-panel">
+        <h2 class="icon-label"><svg class="glyph" aria-hidden="true"><use href="icons/ui.svg#timer"/></svg><span data-i18n="Automatic sleep">Automatic sleep</span></h2>
+        <fieldset class="profiles">
+          <legend data-i18n="Sleep presets">Sleep presets</legend>
+          <div class="profile-buttons">
+            <button type="button" data-preset="gentle" aria-pressed="false" data-i18n="Gentle">Gentle</button>
+            <button type="button" data-preset="balanced" aria-pressed="false" data-i18n="Balanced">Balanced</button>
+            <button type="button" data-preset="active" aria-pressed="false" data-i18n="Active">Active</button>
+          </div>
+        </fieldset>
+        <div class="settings-grid">
+          <div class="setting">
+            <label for="keep" data-i18n="Recent working set">Recent working set</label>
+            <input id="keep" type="number" min="1" max="100" required aria-describedby="keep-help">
+            <small id="keep-help" data-i18n="Keep this many recently used tabs loaded. Protected tabs may increase the total.">Keep this many recently used tabs loaded. Protected tabs may increase the total.</small>
+          </div>
+          <div class="setting">
+            <label for="idle" data-i18n="Idle time before sleep, minutes">Idle time before sleep, minutes</label>
+            <input id="idle" type="number" min="1" max="1440" required aria-describedby="idle-help">
+            <small id="idle-help" data-i18n="Tabs outside the working set can sleep after this time. Background reloads do not count as visits.">Tabs outside the working set can sleep after this time. Background reloads do not count as visits.</small>
+          </div>
+        </div>
+        <label class="check-label"><input id="anti-thrash" type="checkbox" aria-describedby="delay-help"><span data-i18n="Delay sleep after a quick return">Delay sleep after a quick return</span></label>
+        <p id="delay-help" class="muted" data-i18n="Returning within two minutes of a FireUp unload delays the next automatic sleep. With a 10-minute timer, the delay grows to 20, 40, 80 and 120 minutes. Manual unloading remains available.">Returning within two minutes of a FireUp unload delays the next automatic sleep. With a 10-minute timer, the delay grows to 20, 40, 80 and 120 minutes. Manual unloading remains available.</p>
+      </section>
+      <details id="sites-section" class="settings-detail">
+        <summary><span class="icon-label"><svg class="glyph" aria-hidden="true"><use href="icons/ui.svg#shield"/></svg><span data-i18n="Site protection">Site protection</span></span></summary>
+        <div class="settings-panel">
+          <div class="setting">
+            <label for="sites" data-i18n="Never unload these sites">Never unload these sites</label>
+            <textarea id="sites" rows="4" placeholder="One domain per line" data-i18n-placeholder="One domain per line" aria-describedby="sites-help"></textarea>
+            <small id="sites-help" data-i18n="A domain also protects its subdomains. Use chatgpt.com to protect all its tabs. Do not include paths, ports or wildcards.">A domain also protects its subdomains. Use chatgpt.com to protect all its tabs. Do not include paths, ports or wildcards.</small>
+          </div>
+        </div>
+      </details>
+      <details id="appearance-section" class="settings-detail">
+        <summary><span class="icon-label"><svg class="glyph" aria-hidden="true"><use href="icons/ui.svg#appearance"/></svg><span data-i18n="Appearance and language">Appearance and language</span></span></summary>
+        <div class="settings-panel settings-grid">
+          <div class="setting">
+            <label for="theme" data-i18n="Appearance">Appearance</label>
+            <select id="theme"><option value="system" data-i18n="System">System</option><option value="light" data-i18n="Light">Light</option><option value="dark" data-i18n="Dark">Dark</option></select>
+          </div>
+          <div class="setting">
+            <label for="language" data-i18n="Language">Language</label>
+            <select id="language" aria-describedby="language-help"><option value="auto" data-i18n="Browser default">Browser default</option></select>
+            <small id="language-help" data-i18n="Uses the browser interface language. Other languages fall back to English.">Uses the browser interface language. Other languages fall back to English.</small>
+          </div>
+        </div>
+      </details>
+      <div class="save-line">
+        <div class="save-feedback">
+          <p id="unsaved" class="muted" role="status"></p>
+          <p id="saved" role="status"></p>
+        </div>
+        <button id="save" type="submit" class="primary" disabled data-i18n="Save settings">Save settings</button>
+      </div>
+    </form>
+    <button id="retry" hidden data-i18n="Retry">Retry</button>
+    <details id="transfer" class="settings-detail transfer" hidden>
+      <summary><span class="icon-label"><svg class="glyph" aria-hidden="true"><use href="icons/ui.svg#transfer"/></svg><span data-i18n="Settings transfer">Settings transfer</span></span></summary>
+      <div class="settings-panel">
+        <p class="muted" data-i18n="Export includes applied settings and excluded domains. Per-tab protection and open-tab URLs are not included.">Export includes applied settings and excluded domains. Per-tab protection and open-tab URLs are not included.</p>
+        <div class="transfer-actions"><button id="export" data-i18n="Export settings">Export settings</button><label for="import-file" data-i18n="Choose an import file">Choose an import file</label><input id="import-file" type="file" accept=".json,application/json"></div>
+        <div id="import-preview" hidden>
+          <h2 data-i18n="Settings from file">Settings from file</h2>
+          <p id="import-summary"></p>
+          <label for="import-sites" data-i18n="Excluded sites">Excluded sites</label>
+          <textarea id="import-sites" rows="3" readonly></textarea>
+          <p class="muted" data-i18n="Applying this file replaces all current settings, including whether automatic sleep is enabled.">Applying this file replaces all current settings, including whether automatic sleep is enabled.</p>
+          <div class="transfer-actions"><button id="apply-import" class="primary" data-i18n="Apply import">Apply import</button><button id="cancel-import" data-i18n="Cancel">Cancel</button></div>
+        </div>
+        <p id="transfer-status" role="status"></p>
+      </div>
+    </details>
+  </main>
+  <footer>
+    <p data-i18n="FireUp does not read page contents or detect every form or silent playback. Protect tabs or sites with unsaved input. Active, pinned, audible tabs and browser-reported calls are skipped. Private tabs are excluded.">FireUp does not read page contents or detect every form or silent playback. Protect tabs or sites with unsaved input. Active, pinned, audible tabs and browser-reported calls are skipped. Private tabs are excluded.</p>
+    <p data-i18n="Alt+Shift+U unloads unprotected background tabs in all windows. FireUp does not close tabs or terminate processes.">Alt+Shift+U unloads unprotected background tabs in all windows. FireUp does not close tabs or terminate processes.</p>
+  </footer>
+  <script src="locales.generated.js"></script>
+  <script src="i18n.js"></script>
+  <script src="policy.js"></script>
+  <script src="transfer.js"></script>
+  <script src="ui-common.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

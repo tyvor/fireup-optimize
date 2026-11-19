@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "FireUp"
+  },
+  "extensionDescription": {
+    "message": "Descarrega abas inativas do Firefox. Mantém as recentes carregadas e permite excluir sites e proteger abas."
+  },
+  "unloadCommand": {
+    "message": "Descarregar abas em segundo plano sem proteção em todas as janelas"
+  }
+}

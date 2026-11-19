@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "FireUp"
+  },
+  "extensionDescription": {
+    "message": "Descarrega separadores inativos do Firefox. Mantém os recentes e permite excluir sites e proteger separadores."
+  },
+  "unloadCommand": {
+    "message": "Descarregar separadores em segundo plano sem proteção em todas as janelas"
+  }
+}

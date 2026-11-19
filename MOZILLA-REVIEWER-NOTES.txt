@@ -1,0 +1,15 @@
+FireUp 1.0.0 targets desktop Firefox 140 or newer. It works without an account, payment or external service. Its extension ID and required permissions are the same as in 0.4.2.
+
+The source archive includes the JSON translation catalogs and their generator. From the extracted project root, run npm run locales with Node.js 22 or newer, then pwsh -NoProfile -File ./Build.ps1. Build.ps1 writes dist/FireUp-1.0.0-unsigned.xpi. This build was verified on Windows with PowerShell 7. The build needs no npm install or network access. The installed extension uses readable JavaScript, HTML and CSS.
+
+FireUp processes tab information within Firefox. The manifest declares no required data collection.
+
+To test the panel, open several disposable tabs and expand Tab list. The counters shrink while the toolbar panel keeps its height. Protect one background tab, then run Show candidates and unload the eligible tabs. The active and protected tabs should stay loaded. Select an unloaded tab to reload it.
+
+To test settings, change Appearance and language to a different supported language. Save changes becomes available and a message appears. Save, then reopen the toolbar panel to check the language.
+
+Source: https://github.com/tyvor/fireup-optimize
+
+Build instructions: https://github.com/tyvor/fireup-optimize/blob/main/BUILD-INSTRUCTIONS.md
+
+Privacy: https://github.com/tyvor/fireup-optimize/blob/main/PRIVACY.md

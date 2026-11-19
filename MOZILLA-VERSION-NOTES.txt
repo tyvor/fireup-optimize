@@ -1,0 +1,5 @@
+- Redesigned the toolbar panel and settings with outline icons and a collapsible tab list.
+- The panel keeps its height as the list opens. The loaded and sleeping counters take up less space while the list is open.
+- Preview which tabs will be unloaded, or use the Search results scope to unload only eligible matches.
+- Settings include three autosleep presets and show when you have unsaved changes. Save is only enabled after an edit.
+- Added Japanese, German, Spanish, Mexican Spanish, Portuguese and Brazilian Portuguese.

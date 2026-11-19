@@ -1,57 +1,33 @@
-# Mozilla submission notes for 0.4.2
+# Notes for Mozilla reviewers
 
-The version notes below are for the public release-notes field. The reviewer note is for the private notes field. Testing steps and packaging details follow as a reference.
+FireUp 1.0.0 unloads idle tabs in desktop Firefox 140 or newer. It works without an account, payment or external service. Its ID and required permissions match 0.4.2.
 
-## Version notes
+## Source and packaging
 
-- Fixed timing issues that could override newly assigned or renewed tab protection.
-- Clarified what manual unloading affects when search and filters hide tabs.
-- Reduced repeated full-tab queries during automatic unloading and unnecessary session writes.
-- Added a minimum popup width to prevent the panel from collapsing during startup.
-- Added regression tests for tab protection, recent-tab updates, queue recovery and popup sizing.
+The XPI contains readable JavaScript, HTML and CSS. The source archive includes the JSON language catalogs and the generator. Follow the [build instructions](../BUILD-INSTRUCTIONS.md) to regenerate the translations and package the XPI.
 
-## Reviewer note
+The permissions are `tabs`, `storage`, `alarms`, `menus` and `sessions`. FireUp has no content scripts or website-content host permissions. Tab metadata and queued URLs are handled locally; the manifest declares required data collection as `["none"]`. See [Privacy](../PRIVACY.md) and [Permissions](PERMISSIONS.md).
 
-In this update, the automatic unload queue was changed to update recent-tab activity from browser events. Repeated full-tab queries and queue checkpoint copies were reduced, while the final safety checks before each unload were kept. The update also includes the protection fixes from 0.4.1 and a minimum popup width.
+## A short test
 
-No permissions were added. FireUp runs locally in desktop Firefox 140 or newer and needs no account, payment or external service.
+Use disposable pages in a separate Firefox profile. Open several tabs, leave one active and protect one background tab. Run a manual unload from the toolbar panel: the active and protected tabs should stay loaded. Return to an unloaded tab to reload it.
 
-The package contains readable JavaScript, HTML and CSS. There is no compilation, bundling, minification, obfuscation or downloaded code. Packaging only ZIPs the files in the extension directory. npm dependencies are used for development checks.
+The panel defaults to the current window. Other scopes are all windows, checked tabs, a site and search results. Expand **Tab list** to see the counters shrink, then select **Search results** and open **Show candidates** to verify that only eligible matches are included. Manual unloading respects protection rules and bypasses recent-tab and idle delays. **Stop** cancels the remaining queue.
 
-Source code: https://github.com/tyvor/fireup-optimize
+For automatic unloading, set the working set to 1 and the idle timer to 1 minute. There is a first-install grace period based on the settings at installation, normally 10 minutes. Reducing the timer afterward doesn't shorten that initial grace period. Manual unloading works during it.
 
-Build instructions: https://github.com/tyvor/fireup-optimize/blob/main/BUILD-INSTRUCTIONS.md
+Check 30-minute, one-hour and permanent protection from the panel or tab context menu. Site exclusions also cover subdomains. Private, active, pinned, audible and loading tabs are excluded, as are browser-reported calls and screen sharing. Unsaved input and silent playback need manual protection because FireUp doesn't read page contents.
 
-## Packaging and permissions
-
-[Build instructions](../BUILD-INSTRUCTIONS.md) explain how to create the XPI with `manifest.json` at the archive root. File contents are unchanged during packaging. [Publishing](PUBLISHING.md) includes the source-archive command.
-
-The permissions are `tabs`, `storage`, `alarms`, `menus` and `sessions`. There are no content scripts or website-content host permissions. Tab information is processed locally and isn't transmitted. The manifest declares required data collection as `["none"]`. See [Privacy](../PRIVACY.md) and [Permissions](PERMISSIONS.md).
-
-## Testing steps
-
-Use disposable pages in a separate Firefox profile. Open several tabs, leave one active and protect one background tab. Run a manual unload from the toolbar panel. The active and protected tabs should stay loaded; selecting an unloaded tab should reload it. No test credentials are needed.
-
-The panel defaults to the current window. Other scopes are all windows, selected tabs and a site. Search and filters only change the displayed list; hidden tabs in the chosen scope are still included. Manual unloading skips recent-tab and idle delays but respects protection and site exclusions. **Stop** cancels the remaining queue.
-
-For automatic unloading, set the recent-tab count to 1 and the idle timer to 1 minute. The first-install grace period is based on the settings at installation, normally 10 minutes. Reducing the timer afterward doesn't shorten that grace period. Manual unloading works during it.
-
-Check 30-minute, one-hour and permanent protection from the panel or tab context menu. Site exclusions cover subdomains. Private, active, pinned, audible and loading tabs are excluded, as are camera, microphone and screen sharing when Firefox reports them.
-
-Protect unsaved forms, editors and silent playback before unloading. FireUp doesn't read page contents and can't reliably detect all of these situations. Unsaved work may be lost.
-
-Returning to a tab within two minutes of a confirmed FireUp unload delays its next automatic sleep. With a 10-minute base timer, repeated quick returns give 20, 40, 80 and 120-minute delays. This setting can be disabled.
+If a tab is reopened within two minutes of a confirmed FireUp unload, the next automatic sleep is delayed. With a 10-minute base timer, repeated quick returns give 20, 40, 80 and 120-minute delays. This setting can be disabled.
 
 ## Language, settings and background work
 
-**Settings → Language** offers Browser default, English and Russian. Russian Firefox locales select Russian; other locales select English. A saved override also updates context menus and the shortcut description. All translations are included locally.
+Settings → Appearance and language offers the browser default plus eight languages. Change the selection to see the unsaved changes message, then save and reopen the toolbar popup to confirm the new language. The saved choice updates the tab context menu and shortcut description. Translations are packaged locally.
 
-Exported JSON contains preferences, language and excluded domains. It doesn't include open tabs or per-tab protection. Import first shows a preview. **Apply** validates the data again and replaces settings; **Cancel** leaves them unchanged. Format 2 is current; format 1 from 0.3.0 imports with Browser default language. Version 0.3.0 can't read format 2.
+Exported JSON contains preferences, language and excluded domains. It doesn't include open tabs or per-tab protection. Importing a file first shows a read-only preview. Apply replaces settings after another validation pass; Cancel leaves the current settings alone. Format 2 is current; format 1 from 0.3.0 imports with Browser default language.
 
-Alarms resume work after Firefox suspends the background page, and session storage holds the pending queue for the current browser run. Per-tab protection uses Firefox's sessions API. Pausing automatic sleep removes the periodic alarm.
+Firefox may suspend the background page. Alarms resume work and `storage.session` holds the queue for the current browser run. Per-tab protection uses the sessions API. Pausing automatic sleep removes the periodic alarm.
 
-## Validation
+## Checks and known limits
 
-[Testing](TESTING.md) records the automated checks and the popup check in Firefox. [Performance](PERFORMANCE.md) contains the queue benchmark and its limits.
-
-Mozilla lint reports no errors or notices. The local wrapper allows one Android-only minimum-version warning because FireUp targets desktop Firefox.
+See [verification](../VERIFICATION.md) for checks on the 1.0.0 package and [Testing](TESTING.md) for the test suite.

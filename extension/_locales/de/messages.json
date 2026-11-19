@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "FireUp"
+  },
+  "extensionDescription": {
+    "message": "Entlädt inaktive Firefox-Tabs und bietet Schutz für kürzlich genutzte Tabs, Websites und einzelne Tabs."
+  },
+  "unloadCommand": {
+    "message": "Ungeschützte Hintergrund-Tabs in allen Fenstern entladen"
+  }
+}

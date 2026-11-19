@@ -1,7 +1,7 @@
 (function (root) {
   'use strict';
   const P = root.FireUpPolicy;
-  const VERSION = '0.4.2', FORMAT_VERSION = 2, MAX_BYTES = 256 * 1024;
+  const VERSION = '1.0.0', FORMAT_VERSION = 2, MAX_BYTES = 256 * 1024;
   const LEGACY_FIELDS = ['enabled', 'keepRecent', 'idleMinutes', 'sites', 'theme', 'antiThrash'];
   const FIELDS = [...LEGACY_FIELDS, 'language'];
   function object(value) { return value !== null && typeof value === 'object' && !Array.isArray(value); }
@@ -15,7 +15,7 @@
     if (!Number.isInteger(value.keepRecent) || value.keepRecent < 1 || value.keepRecent > 100) throw new Error('The working set must be between 1 and 100.');
     if (!Number.isInteger(value.idleMinutes) || value.idleMinutes < 1 || value.idleMinutes > 1440) throw new Error('The timer must be between 1 and 1440 minutes.');
     if (!['system', 'light', 'dark'].includes(value.theme)) throw new Error('Unknown appearance setting.');
-    if (!legacy && !['auto', 'en', 'ru'].includes(value.language)) throw new Error('Unknown language setting.');
+    if (!legacy && value.language !== 'auto' && !root.FireUpI18n.supports(value.language)) throw new Error('Unknown language setting.');
     if (!Array.isArray(value.sites) || value.sites.length > 500 || value.sites.some(s => typeof s !== 'string' || s.length > 2048)) throw new Error('Use at most 500 excluded domains.');
     const sites = value.sites.map(P.site);
     return P.settings({ enabled: value.enabled, keepRecent: value.keepRecent, idleMinutes: value.idleMinutes, sites, theme: value.theme, antiThrash: value.antiThrash, language: legacy ? 'auto' : value.language });

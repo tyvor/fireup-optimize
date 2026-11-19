@@ -1,5 +1,6 @@
 (function (root) {
   'use strict';
+  const I = typeof module !== 'undefined' ? require('./i18n.js') : root.FireUpI18n;
   const DEFAULTS = Object.freeze({ enabled: true, keepRecent: 10, idleMinutes: 10, sites: [], theme: 'system', antiThrash: true, language: 'auto' });
   function host(value) {
     try { const u = new URL(value); return /^https?:$/.test(u.protocol) ? u.hostname.toLowerCase().replace(/\.$/, '') : ''; }
@@ -22,7 +23,7 @@
       keepRecent: Number.isInteger(v.keepRecent) && v.keepRecent >= 1 && v.keepRecent <= 100 ? v.keepRecent : 10,
       idleMinutes: Number.isInteger(v.idleMinutes) && v.idleMinutes >= 1 && v.idleMinutes <= 1440 ? v.idleMinutes : 10,
       theme: ['system', 'light', 'dark'].includes(v.theme) ? v.theme : 'system',
-      language: ['auto', 'en', 'ru'].includes(v.language) ? v.language : 'auto',
+      language: I.supports(v.language) ? v.language : 'auto',
       antiThrash: typeof v.antiThrash === 'boolean' ? v.antiThrash : true,
       sites: [...new Set((Array.isArray(v.sites) ? v.sites : []).flatMap(s => { try { return [site(s)]; } catch { return []; } }))].slice(0, 500)
     };

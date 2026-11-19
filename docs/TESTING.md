@@ -1,4 +1,6 @@
-# Testing FireUp 0.4.2
+# Testing FireUp
+
+The checks run for the 1.0.0 implementation are recorded in [1.0.0 verification](../VERIFICATION.md). The earlier 0.4.2 evidence below is historical.
 
 ## Automated checks
 
@@ -6,7 +8,7 @@ The Node tests cover policy, protection, queue recovery, settings transfer and l
 
 The 11 protection regressions from 0.4.1 remain. The same file passed 2 tests and failed 9 against 0.4.0; all 11 passed after the protection fixes.
 
-Playwright 1.62.1 runs 15 general UI scenarios and 6 language scenarios in Chromium with modeled Firefox APIs. The startup test adds four language/theme combinations with an intentionally unresolved settings response. At a 16-pixel viewport, the popup body stays at 320 pixels; at 320, 400 and 800 pixels, it fits its intended width. Reloads keep the same bounds. This checks CSS and page startup, not Firefox's popup-sizing algorithm.
+Playwright 1.62.1 runs 15 general UI scenarios and 6 language scenarios in Chromium with modeled Firefox APIs. The startup test adds 16 language and theme combinations with an intentionally unresolved settings response. It also checks that opening the list shrinks the counters and gives the list more room. At a 16-pixel viewport, the popup body stays at 320 pixels; at 320, 400 and 800 pixels, it fits its intended width. Reloads keep the same bounds. This checks CSS and page startup, not Firefox's popup-sizing algorithm.
 
 The source check parses JavaScript and JSON, checks versions and follows local Markdown links. Mozilla lint uses web-ext 10.8.0. It allows one Android-only minimum-version warning when there is no gecko_android entry; all other warnings, errors and notices fail. Android must stay unselected in AMO.
 
@@ -34,9 +36,11 @@ A basic manual check passed for 0.4.1. The 0.4.2 popup was also checked in Firef
 
 This was a basic popup check, separate from the automated tests above. It did not establish compatibility across Firefox versions, display configurations or repeated cold starts. Firefox RAM and CPU use have not been measured.
 
+The maintainer reported that the final 1.0.0 build worked in Firefox. An upgrade from 0.4.2 has yet to be recorded.
+
 For a broader compatibility check, use disposable pages in a separate profile:
 
-- Extend the popup check across both languages, both themes, display scaling and a narrow browser window. For a repeatable compatibility record, log cold openings separately from warm openings and openings after background-page idle.
+- Extend the popup check across the supported languages, both themes, display scaling and a narrow browser window. For a repeatable compatibility record, log cold openings separately from warm openings and openings after background-page idle.
 - During an automatic queue, switch tabs, close recent tabs, create a tab and restore an unloaded tab. Newly recent tabs must stay loaded.
 - Check queue recovery after the background page sleeps, all manual scopes and cancellation.
 - Check active tabs in two windows, pinned tabs, audio, loading pages, calls and screen sharing.
